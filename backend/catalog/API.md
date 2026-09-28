@@ -77,6 +77,18 @@ categoría y estación activas y marca `publicado` y `disponible`.
 Al desmarcar cualquiera, debe desaparecer de la siguiente consulta del menú.
 Las imágenes no forman parte del modelo actual.
 
+## Catálogo de práctica
+
+La carta de Campo está disponible como carga repetible de 10 categorías y 71
+productos. Desde `backend/`, con el entorno virtual activado:
+
+```bash
+python manage.py seed_campo_menu
+```
+
+El comando conserva los registros existentes y no sobrescribe ediciones.
+Fuente, precios, variantes y simulación: [guía de los datos](data/README.md).
+
 ## Pruebas aisladas
 
 ```bash
