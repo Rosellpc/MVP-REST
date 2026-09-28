@@ -4,6 +4,11 @@
 > **Stack principal:** React + TypeScript + React Router · Django + Django REST Framework · PostgreSQL (Supabase)  
 > **Despliegue propuesto:** Vercel (frontend) + Railway o Render (backend) + Supabase (base de datos)
 
+**API pública del menú implementada:** `GET /api/v1/menu/` consulta el catálogo
+persistente configurado en Django. Contrato, filtros, comandos de Git Bash y pruebas
+en [backend/catalog/API.md](backend/catalog/API.md). Esta implementación sustituye
+la carta temporal descrita en la sección de arranque; el frontend sigue pendiente.
+
 ## Tabla de contenidos
 
 1. [Visión del proyecto](#1-visión-del-proyecto)
