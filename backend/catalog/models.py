@@ -66,6 +66,13 @@ class Product(models.Model):
     )
     name = models.CharField("nombre", max_length=150)
     description = models.TextField("descripción", blank=True)
+    image_url = models.URLField(
+        "URL de la imagen",
+        max_length=2045,
+        blank=True,
+        default=""    ,
+        help_text="Enlace directo a una imagen externa."
+    )
     category = models.ForeignKey(
         Category,
         verbose_name="categoría",

@@ -8,7 +8,6 @@ from django.db import IntegrityError, transaction
 
 from catalog.models import Category, Product, Station
 
-
 DATA_PATH = Path(__file__).resolve().parents[2] / "data" / "campo_menu.json"
 
 
@@ -18,7 +17,12 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
             "--dry-run", action="store_true",
-            help="Valida y simula la carga; revierte todos los cambios al terminar.",
+            help="Valida y simula la carga;",
+        )
+        parser.add_argument(
+            "--update-images",
+            action="store_true",
+            help="Actualiza las URLs de imágenes de productos existentes.",
         )
 
     def load_catalog(self):
@@ -54,6 +58,7 @@ class Command(BaseCommand):
                         defaults = {
                             "name": row["name"],
                             "description": "",
+                            "image_url": row.get("image_url", ""),
                             "category": category,
                             "station": stations[group["station"]],
                             "sale_price": Decimal(row["price"]),
@@ -66,10 +71,21 @@ class Command(BaseCommand):
                             exclude=["category", "station"],
                             validate_unique=False, validate_constraints=False,
                         )
-                        _, created = Product.objects.get_or_create(sku=sku, defaults=defaults)
+                        product, created = Product.objects.get_or_create(
+                            sku=sku,
+                            defaults=defaults,
+                        )
+                        if (
+                            options["update_images"]
+                            and not created
+                            and row.get("image_url")
+                            and product.image_url != row["image_url"]
+                        ):
+                            product.image_url = row["image_url"]
+                            product.save(update_fields=["image_url", "updated_at"])
+
                         totals["products"] += int(created)
                         totals["existing"] += int(not created)
-
                 if options["dry_run"]:
                     transaction.set_rollback(True)
         except (OSError, ValueError, KeyError, InvalidOperation, ValidationError, IntegrityError) as exc:

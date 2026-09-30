@@ -41,6 +41,7 @@ class MenuAPITests(APITestCase):
                 "id": self.product.pk,
                 "name": "Pasta",
                 "description": "Pasta con verduras",
+                "image_url": "",
                 "category": {"id": self.category.pk, "name": "Platos"},
                 "sale_price": "25.50",
             }],

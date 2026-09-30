@@ -3,126 +3,147 @@
   "reviewed_on": "2026-09-28",
   "currency": "PEN",
   "prices_include_taxes": true,
+ 
   "categories": [
     {
-      "name": "Cócteles de autor", "station": "BAR", "pdf_pages": [2],
+      "name": "Cócteles de autor",
+      "station": "BAR",
+      "pdf_pages": [2],
       "products": [
-        {"sku": "CAMPO-CA-001", "name": "Matacuy Sour", "price": "36.00"},
-        {"sku": "CAMPO-CA-002", "name": "Inti Let", "price": "38.00"},
-        {"sku": "CAMPO-CA-003", "name": "Capitán Jora", "price": "42.00"},
-        {"sku": "CAMPO-CA-004", "name": "Emoliente Mule", "price": "38.00"},
-        {"sku": "CAMPO-CA-005", "name": "Frutillada", "price": "36.00"},
-        {"sku": "CAMPO-CA-006", "name": "Campo Punch", "price": "38.00"},
-        {"sku": "CAMPO-CA-007", "name": "Andean Bird", "price": "42.00"},
-        {"sku": "CAMPO-CA-008", "name": "Muyu", "price": "46.00"}
+        {"sku": "CAMPO-CA-001", "name": "Matacuy Sour", "price": "36.00", "image_url": "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-002", "name": "Inti Let", "price": "38.00", "image_url": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-003", "name": "Capitán Jora", "price": "42.00", "image_url": "https://images.unsplash.com/photo-1527061011665-3652c757a4d4?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-004", "name": "Emoliente Mule", "price": "38.00", "image_url": "https://images.unsplash.com/photo-1541544741938-0af808871cc0?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-005", "name": "Frutillada", "price": "36.00", "image_url": "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-006", "name": "Campo Punch", "price": "38.00", "image_url": "https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-007", "name": "Andean Bird", "price": "42.00", "image_url": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CA-008", "name": "Muyu", "price": "46.00", "image_url": "https://images.unsplash.com/photo-1560512823-829485b8bf24?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Cócteles clásicos", "station": "BAR", "pdf_pages": [2],
+      "name": "Cócteles clásicos",
+      "station": "BAR",
+      "pdf_pages": [2],
       "products": [
-        {"sku": "CAMPO-CC-001", "name": "Pisco Sour clásico", "price": "30.00"},
-        {"sku": "CAMPO-CC-002", "name": "Chicha Sour", "price": "30.00"},
-        {"sku": "CAMPO-CC-003", "name": "Chilcano", "price": "32.00"},
-        {"sku": "CAMPO-CC-004", "name": "Pisco Punch", "price": "34.00"}
+        {"sku": "CAMPO-CC-001", "name": "Pisco Sour clásico", "price": "30.00", "image_url": "https://images.unsplash.com/photo-1582101311130-e18e0e287136?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CC-002", "name": "Chicha Sour", "price": "30.00", "image_url": "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CC-003", "name": "Chilcano", "price": "32.00", "image_url": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-CC-004", "name": "Pisco Punch", "price": "34.00", "image_url": "https://images.unsplash.com/photo-1536935338788-846bb9981813?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Para comenzar", "station": "KITCHEN", "pdf_pages": [3],
+      "name": "Para comenzar",
+      "station": "KITCHEN",
+      "pdf_pages": [3],
       "products": [
-        {"sku": "CAMPO-PC-001", "name": "Tortitas de choclo", "price": "42.00"},
-        {"sku": "CAMPO-PC-002", "name": "Croquetas de rabo", "price": "40.00"},
-        {"sku": "CAMPO-PC-003", "name": "Cachanga cusqueña", "price": "48.00"},
-        {"sku": "CAMPO-PC-004", "name": "Conchas brasa", "price": "52.00"},
-        {"sku": "CAMPO-PC-005", "name": "Hummus del sol", "price": "42.00"}
+        {"sku": "CAMPO-PC-001", "name": "Tortitas de choclo", "price": "42.00", "image_url": "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PC-002", "name": "Croquetas de rabo", "price": "40.00", "image_url": "https://images.unsplash.com/photo-1562967914-608f82629710?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PC-003", "name": "Cachanga cusqueña", "price": "48.00", "image_url": "https://images.unsplash.com/photo-1509722747041-616f39b57569?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PC-004", "name": "Conchas brasa", "price": "52.00", "image_url": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PC-005", "name": "Hummus del sol", "price": "42.00", "image_url": "https://images.unsplash.com/photo-1541518763669-27fef04b14ea?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Entradas", "station": "KITCHEN", "pdf_pages": [4],
+      "name": "Entradas",
+      "station": "KITCHEN",
+      "pdf_pages": [4],
       "products": [
-        {"sku": "CAMPO-EN-001", "name": "Papitas de Campo", "price": "38.00"},
-        {"sku": "CAMPO-EN-002", "name": "Anticuchada de alpaca", "price": "48.00"},
-        {"sku": "CAMPO-EN-003", "name": "Aventura de la causa", "price": "46.00"},
-        {"sku": "CAMPO-EN-004", "name": "Lechoncito en taco", "price": "40.00"},
-        {"sku": "CAMPO-EN-005", "name": "Ceviche calentón", "price": "66.00"},
-        {"sku": "CAMPO-EN-006", "name": "Estiradito al estilo José", "price": "62.00"}
+        {"sku": "CAMPO-EN-001", "name": "Papitas de Campo", "price": "38.00", "image_url": "https://images.unsplash.com/photo-1518013034458-349094dc9166?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-EN-002", "name": "Anticuchada de alpaca", "price": "48.00", "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-EN-003", "name": "Aventura de la causa", "price": "46.00", "image_url": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-EN-004", "name": "Lechoncito en taco", "price": "40.00", "image_url": "https://images.unsplash.com/photo-1565299585323-38d6b0865b47?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-EN-005", "name": "Ceviche calentón", "price": "66.00", "image_url": "https://images.unsplash.com/photo-1535400255456-984241443b29?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-EN-006", "name": "Estiradito al estilo José", "price": "62.00", "image_url": "https://images.unsplash.com/photo-1534422298391-e4f8c172dddb?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Sopas", "station": "KITCHEN", "pdf_pages": [5],
+      "name": "Sopas",
+      "station": "KITCHEN",
+      "pdf_pages": [5],
       "products": [
-        {"sku": "CAMPO-SO-001", "name": "Caldito para la altura", "price": "32.00"},
-        {"sku": "CAMPO-SO-002", "name": "Cremoso de zapallo y kion", "price": "36.00"},
-        {"sku": "CAMPO-SO-003", "name": "El chupín de Campo", "price": "68.00"}
+        {"sku": "CAMPO-SO-001", "name": "Caldito para la altura", "price": "32.00", "image_url": "https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-SO-002", "name": "Cremoso de zapallo y kion", "price": "36.00", "image_url": "https://images.unsplash.com/photo-1476718406336-bb5a9690ee2a?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-SO-003", "name": "El chupín de Campo", "price": "68.00", "image_url": "https://images.unsplash.com/photo-1559847844-5315695dadae?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Vegetarianos", "station": "KITCHEN", "pdf_pages": [5],
+      "name": "Vegetarianos",
+      "station": "KITCHEN",
+      "pdf_pages": [5],
       "products": [
-        {"sku": "CAMPO-VE-001", "name": "Gnocchis primavera", "price": "42.00"},
-        {"sku": "CAMPO-VE-002", "name": "Hongos en diversión", "price": "56.00"}
+        {"sku": "CAMPO-VE-001", "name": "Gnocchis primavera", "price": "42.00", "image_url": "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-VE-002", "name": "Hongos en diversión", "price": "56.00", "image_url": "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Fondos", "station": "KITCHEN", "pdf_pages": [6, 7],
+      "name": "Fondos",
+      "station": "KITCHEN",
+      "pdf_pages": [6, 7],
       "products": [
-        {"sku": "CAMPO-FO-001", "name": "Chicharrón cusqueño", "price": "62.00"},
-        {"sku": "CAMPO-FO-002", "name": "Parrillón de trucha", "price": "64.00"},
-        {"sku": "CAMPO-FO-003", "name": "Ancestral cuy", "price": "82.00"},
-        {"sku": "CAMPO-FO-004", "name": "Costillar de res de largo aliento", "price": "72.00"},
-        {"sku": "CAMPO-FO-005", "name": "Cordon bleu de ternera", "price": "68.00"},
-        {"sku": "CAMPO-FO-006", "name": "La carrillera", "price": "68.00"},
-        {"sku": "CAMPO-FO-007", "name": "Lomo saltado clásico", "price": "64.00"},
-        {"sku": "CAMPO-FO-008", "name": "Baby chicken al estilo del Campo", "price": "70.00"},
-        {"sku": "CAMPO-FO-009", "name": "Langostinos gigantes y pulpos parrilleros", "price": "72.00"},
-        {"sku": "CAMPO-FO-010", "name": "Burger parrillera", "price": "40.00"},
-        {"sku": "CAMPO-FO-011", "name": "Ensalada de pollito maicero", "price": "52.00"},
-        {"sku": "CAMPO-FO-012", "name": "Codillo braseado (para compartir)", "price": "92.00"}
+        {"sku": "CAMPO-FO-001", "name": "Chicharrón cusqueño", "price": "62.00", "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-002", "name": "Parrillón de trucha", "price": "64.00", "image_url": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-003", "name": "Ancestral cuy", "price": "82.00", "image_url": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-004", "name": "Costillar de res de largo aliento", "price": "72.00", "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-005", "name": "Cordon bleu de ternera", "price": "68.00", "image_url": "https://images.unsplash.com/photo-1600891964092-4316c288032e?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-006", "name": "La carrillera", "price": "68.00", "image_url": "https://images.unsplash.com/photo-1558030006-450675393462?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-007", "name": "Lomo saltado clásico", "price": "64.00", "image_url": "https://images.unsplash.com/photo-1588168333986-5078d3ae3976?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-008", "name": "Baby chicken al estilo del Campo", "price": "70.00", "image_url": "https://images.unsplash.com/photo-1598515214211-89d3c73ae83b?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-009", "name": "Langostinos gigantes y pulpos parrilleros", "price": "72.00", "image_url": "https://images.unsplash.com/photo-1535400255456-984241443b29?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-010", "name": "Burger parrillera", "price": "40.00", "image_url": "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-011", "name": "Ensalada de pollito maicero", "price": "52.00", "image_url": "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-FO-012", "name": "Codillo braseado (para compartir)", "price": "92.00", "image_url": "https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Postres", "station": "KITCHEN", "pdf_pages": [8],
+      "name": "Postres",
+      "station": "KITCHEN",
+      "pdf_pages": [8],
       "products": [
-        {"sku": "CAMPO-PO-001", "name": "Brûlée de cacao", "price": "30.00"},
-        {"sku": "CAMPO-PO-002", "name": "Cheesecake", "price": "28.00"},
-        {"sku": "CAMPO-PO-003", "name": "Pannacotta", "price": "28.00"},
-        {"sku": "CAMPO-PO-004", "name": "Crocante de quinua", "price": "26.00"}
+        {"sku": "CAMPO-PO-001", "name": "Brûlée de cacao", "price": "30.00", "image_url": "https://images.unsplash.com/photo-1470124182917-cc6e71b22ecc?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PO-002", "name": "Cheesecake", "price": "28.00", "image_url": "https://images.unsplash.com/photo-1533134242443-d4fd215305ad?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PO-003", "name": "Pannacotta", "price": "28.00", "image_url": "https://images.unsplash.com/photo-1488477181946-6428a0291777?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-PO-004", "name": "Crocante de quinua", "price": "26.00", "image_url": "https://images.unsplash.com/photo-1509440159596-0249088772ff?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Bebidas calientes", "station": "BAR", "pdf_pages": [9],
+      "name": "Bebidas calientes",
+      "station": "BAR",
+      "pdf_pages": [9],
       "products": [
-        {"sku": "CAMPO-BC-001", "name": "Americano", "price": "9.00"},
-        {"sku": "CAMPO-BC-002", "name": "Espresso", "price": "9.00"},
-        {"sku": "CAMPO-BC-003", "name": "Macchiato", "price": "12.00"},
-        {"sku": "CAMPO-BC-004", "name": "Capuccino", "price": "12.00"},
-        {"sku": "CAMPO-BC-005", "name": "Latte", "price": "12.00"},
-        {"sku": "CAMPO-BC-006", "name": "Infusión de manzanilla", "price": "15.00"},
-        {"sku": "CAMPO-BC-007", "name": "Infusión de hierba luisa", "price": "15.00"},
-        {"sku": "CAMPO-BC-008", "name": "Infusión de coca", "price": "15.00"},
-        {"sku": "CAMPO-BC-009", "name": "Infusión de muña", "price": "15.00"},
-        {"sku": "CAMPO-BC-010", "name": "Té negro", "price": "15.00"},
-        {"sku": "CAMPO-BC-011", "name": "Infusión de anís", "price": "15.00"},
-        {"sku": "CAMPO-BC-012", "name": "Aromática de muña, cáscara de naranja y piña", "price": "18.00"},
-        {"sku": "CAMPO-BC-013", "name": "Aromática de hierba luisa, kion y limón", "price": "18.00"},
-        {"sku": "CAMPO-BC-014", "name": "Aromática de cedroncillo, canela y airampo", "price": "18.00"},
-        {"sku": "CAMPO-BC-015", "name": "Té macho", "price": "20.00"}
+        {"sku": "CAMPO-BC-001", "name": "Americano", "price": "9.00", "image_url": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-002", "name": "Espresso", "price": "9.00", "image_url": "https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-003", "name": "Macchiato", "price": "12.00", "image_url": "https://images.unsplash.com/photo-1485808191679-5f86510681a2?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-004", "name": "Capuccino", "price": "12.00", "image_url": "https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-005", "name": "Latte", "price": "12.00", "image_url": "https://images.unsplash.com/photo-1570968915860-54d5c301fa9f?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-006", "name": "Infusión de manzanilla", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-007", "name": "Infusión de hierba luisa", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-008", "name": "Infusión de coca", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-009", "name": "Infusión de muña", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-010", "name": "Té negro", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-011", "name": "Infusión de anís", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-012", "name": "Aromática de muña, cáscara de naranja y piña", "price": "18.00", "image_url": "https://images.unsplash.com/photo-1576092768241-dec231879fc3?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-013", "name": "Aromática de hierba luisa, kion y limón", "price": "18.00", "image_url": "https://images.unsplash.com/photo-1597481499750-3e6b22637e12?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-014", "name": "Aromática de cedroncillo, canela y airampo", "price": "18.00", "image_url": "https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BC-015", "name": "Té macho", "price": "20.00", "image_url": "https://images.unsplash.com/photo-1561336313-0bd5e0b27ec8?auto=format&fit=crop&w=800&q=80"}
       ]
     },
     {
-      "name": "Bebidas frías", "station": "BAR", "pdf_pages": [10],
+      "name": "Bebidas frías",
+      "station": "BAR",
+      "pdf_pages": [10],
       "products": [
-        {"sku": "CAMPO-BF-001", "name": "Chicha morada", "price": "15.00"},
-        {"sku": "CAMPO-BF-002", "name": "Limonada", "price": "15.00"},
-        {"sku": "CAMPO-BF-003", "name": "Limonada de hierba buena", "price": "15.00"},
-        {"sku": "CAMPO-BF-004", "name": "Muña y piña", "price": "15.00"},
-        {"sku": "CAMPO-BF-005", "name": "Coca Cola", "price": "12.00"},
-        {"sku": "CAMPO-BF-006", "name": "Inca Kola", "price": "12.00"},
-        {"sku": "CAMPO-BF-007", "name": "Agua Munay sin gas", "price": "10.00"},
-        {"sku": "CAMPO-BF-008", "name": "Agua Munay con gas", "price": "10.00"},
-        {"sku": "CAMPO-BF-009", "name": "Cusqueña dorada", "price": "14.00"},
-        {"sku": "CAMPO-BF-010", "name": "Cusqueña malta", "price": "14.00"},
-        {"sku": "CAMPO-BF-011", "name": "Cusqueña trigo", "price": "14.00"},
-        {"sku": "CAMPO-BF-012", "name": "Cerveza artesanal", "price": "22.00"}
+        {"sku": "CAMPO-BF-001", "name": "Chicha morada", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-002", "name": "Limonada", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1523371054106-bbf80586c38c?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-003", "name": "Limonada de hierba buena", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-004", "name": "Muña y piña", "price": "15.00", "image_url": "https://images.unsplash.com/photo-1556881286-fc6915169721?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-005", "name": "Coca Cola", "price": "12.00", "image_url": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-006", "name": "Inca Kola", "price": "12.00", "image_url": "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-007", "name": "Agua Munay sin gas", "price": "10.00", "image_url": "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-008", "name": "Agua Munay con gas", "price": "10.00", "image_url": "https://images.unsplash.com/photo-1551024709-8f23befc6f87?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-009", "name": "Cusqueña dorada", "price": "14.00", "image_url": "https://images.unsplash.com/photo-1608270586620-248524c67de9?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-010", "name": "Cusqueña malta", "price": "14.00", "image_url": "https://images.unsplash.com/photo-1535958636474-b021ee887b13?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-011", "name": "Cusqueña trigo", "price": "14.00", "image_url": "https://images.unsplash.com/photo-1567696911980-2eed69a46042?auto=format&fit=crop&w=800&q=80"},
+        {"sku": "CAMPO-BF-012", "name": "Cerveza artesanal", "price": "22.00", "image_url": "https://images.unsplash.com/photo-1535958636474-b021ee887b13?auto=format&fit=crop&w=800&q=80"}
       ]
     }
   ]

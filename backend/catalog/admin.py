@@ -62,6 +62,7 @@ class ProductAdmin(admin.ModelAdmin):
                 "fields": (
                     "sku",
                     "name",
+                    "image_url",
                     "description",
                     "category",
                 ),
