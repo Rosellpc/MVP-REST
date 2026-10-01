@@ -1,33 +1,40 @@
 import { useState, type SubmitEvent } from "react";
+import type { Category, MenuFilters } from "../types/menu";
 
 type SearchBoxProps = {
-  onSearch: (filters: { name: string; category: string}) => void;
+  categories: Category[];
+  appliedFilters: MenuFilters;
+  onSearch: (filters: MenuFilters) => void;
 };
 
-export default function SearchBox({onSearch}: SearchBoxProps) {
-  // Estado local para controlar lo que se escribe en cada campo.
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
+export default function SearchBox({
+  categories,
+  appliedFilters,
+  onSearch,
+}: SearchBoxProps) {
+  // Valores que el usuario está editando.
+  const [name, setName] = useState(appliedFilters.name);
+  const [category, setCategory] = useState(appliedFilters.category);
 
   function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
-    // Evita que el navegador recargue la página al enviar el formulario.
     event.preventDefault();
 
-    // Envía los valores al componente padre
-    // trim() quita espacios accidentales al principio y al final.
+    // Solo al enviar se actualizan los filtros de la lista.
     onSearch({
       name: name.trim(),
-      category: category.trim(),
+      category,
     });
   }
 
-  function handleclear() {
+  function handleClear() {
     setName("");
     setCategory("");
-
-    // Quita los filtros aplicados en el componente padre.
-    onSearch({ name: "", category: ""});
+    onSearch({ name: "", category: "" });
   }
+
+  const appliedCategory = categories.find(
+    (item) => String(item.id) === appliedFilters.category,
+  );
 
   return (
     <>
@@ -35,32 +42,41 @@ export default function SearchBox({onSearch}: SearchBoxProps) {
         <label>
           Buscar platillo
           <input
-            type="text"
+            type="search"
             placeholder="Ej: Ceviche, Hamburguesa..."
             value={name}
-            // Actualiza el estado local conforme se escribe.
             onChange={(event) => setName(event.target.value)}
           />
         </label>
 
         <label>
           Categoría
-          <input 
-            type="text" 
-            placeholder="Entradas, Fondos, Postres" 
-            value={category} 
-            // Cuarda el texto de categoría para enviarlo al pulsar Buscar.
+          <select
+            value={category}
             onChange={(event) => setCategory(event.target.value)}
-          />
+          >
+            <option value="">Todas las categorías</option>
+
+            {categories.map((item) => (
+              <option key={item.id} value={String(item.id)}>
+                {item.name}
+              </option>
+            ))}
+          </select>
         </label>
 
-
         <button type="submit">Buscar</button>
-        <button type="button" onClick={handleclear}>X</button>
+        <button type="button" onClick={handleClear}>
+          Limpiar
+        </button>
       </form>
 
-      <p className="search-box box-state" aria-live="polite">
-        Búsqueda: <strong>{name || "Sin búsqueda"}</strong>
+      <p aria-live="polite">
+        Búsqueda aplicada:{" "}
+        <strong>{appliedFilters.name || "Todos los productos"}</strong>
+        {" · "}
+        Categoría:{" "}
+        <strong>{appliedCategory?.name || "Todas"}</strong>
       </p>
     </>
   );

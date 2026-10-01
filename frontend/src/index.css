@@ -41,7 +41,7 @@ body {
   color: var(--charcoal-deep);
 }
 
-:is(a, button, input):focus-visible {
+:is(a, button, input, select):focus-visible {
   outline: 2px solid var(--text);
   outline-offset: 4px;
 }
@@ -208,7 +208,9 @@ img {
 }
 
 .search-box input:hover,
-.search-box input:focus {
+.search-box input:focus,
+.search-box select:hover,
+.search-box select:focus {
   background: rgb(30 31 34 / 62%);
   border-color: rgb(255 255 255 / 40%);
 }
