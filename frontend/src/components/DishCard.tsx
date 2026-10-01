@@ -13,7 +13,7 @@ export default function DishCard({
             <img src={image_url} alt={name} />
             <div className="property-card-content">
                 <h4>{name}</h4>
-                <p>{category}</p>
+                <p>{category || "Sin categoría"}</p>
                 <strong>
                     s/ {Number(price).toFixed(2)}
                 </strong>

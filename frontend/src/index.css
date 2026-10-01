@@ -318,6 +318,8 @@ img {
   font-variant-numeric: tabular-nums;
 }
 
+
+
 @media (max-width: 720px) {
   .header {
     align-items: flex-start;
