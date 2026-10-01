@@ -8,7 +8,7 @@ from .serializers import MenuProductSerializer, MenuQuerySerializer
 
 
 class MenuPagination(PageNumberPagination):
-    page_size = 20
+    page_size = 100
 
 
 class MenuThrottle(AnonRateThrottle):
