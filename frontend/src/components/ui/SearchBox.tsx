@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from "react";
-import type { Category, MenuFilters } from "../types/menu";
+import type { Category, MenuFilters } from "../../types/menu";
 
 type SearchBoxProps = {
   categories: Category[];

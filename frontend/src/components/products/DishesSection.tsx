@@ -1,5 +1,6 @@
 import DishCard from "./DishCard";
-import type { MenuFilters, Product } from "../types/menu";
+import { filterProducts } from "../../utils/filterProducts.js";
+import type { MenuFilters, Product } from "../../types/menu";
 
 type DishesSectionProps = {
   products: Product[];
@@ -10,19 +11,7 @@ export default function DishesSection({
   products,
   filters,
 }: DishesSectionProps) {
-  const normalizedName = filters.name.toLocaleLowerCase("es");
-
-  const filteredProducts = products.filter((product) => {
-    const matchesName = product.name
-      .toLocaleLowerCase("es")
-      .includes(normalizedName);
-
-    const matchesCategory =
-      filters.category === "" ||
-      String(product.category.id) === filters.category;
-
-    return matchesName && matchesCategory;
-  });
+  const filteredProducts = filterProducts(products, filters);
 
   return (
     <section className="properties-section">

@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Header from "../components/Header";
-import Hero from "../components/Hero";
-import SearchBox from "../components/SearchBox";
-import DishesSection from "../components/DishesSection";
+import Header from "../components/layout/Header";
+import Hero from "../components/ui/Hero";
+import SearchBox from "../components/ui/SearchBox";
+import DishesSection from "../components/products/DishesSection";
+import { getProductCategories } from "../utils/filterProducts.ts";
 import type {
-  Category,
   MenuFilters,
   MenuResponse,
   Product,
@@ -83,14 +83,7 @@ export default function MenuPage() {
   }, [reloadKey]);
 
   // Genera opciones únicas a partir de la carta completa.
-  const categories = Array.from(
-    new Map<number, Category>(
-      products.map((product) => [
-        product.category.id,
-        product.category,
-      ]),
-    ).values(),
-  ).sort((a, b) => a.name.localeCompare(b.name, "es"));
+  const categories = getProductCategories(products);
 
   return (
     <div className="app">
