@@ -6,7 +6,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase
 
 from .models import Category, Product, Station
-from .views import MenuThrottle
+from .views import MenuPagination, MenuThrottle
 
 
 class MenuAPITests(APITestCase):
@@ -104,17 +104,18 @@ class MenuAPITests(APITestCase):
         self.assertEqual(list(Product.objects.values()), before)
 
     def test_pagination_category_order_and_no_repeated_category_queries(self):
+        page_size = MenuPagination.page_size
         Product.objects.bulk_create([
             Product(
                 sku=f"DRINK-{index:02d}", name="Agua", category=self.drinks,
                 station=self.station, sale_price=Decimal("3.00"), published=True,
             )
-            for index in range(21)
+            for index in range(page_size + 1)
         ])
         with self.assertNumQueries(2):
             first = self.client.get(self.url).json()
-        self.assertEqual(first["count"], 22)
-        self.assertEqual(len(first["results"]), 20)
+        self.assertEqual(first["count"], page_size + 2)
+        self.assertEqual(len(first["results"]), page_size)
         self.assertIsNotNone(first["next"])
         self.assertIsNone(first["previous"])
         self.assertTrue(all(p["category"]["id"] == self.drinks.pk for p in first["results"]))
@@ -125,7 +126,7 @@ class MenuAPITests(APITestCase):
         self.assertIsNotNone(second["previous"])
         self.assertEqual(second["results"][-1]["id"], self.product.pk)
         ids = [p["id"] for p in first["results"] + second["results"]]
-        self.assertEqual(len(set(ids)), 22)
+        self.assertEqual(len(set(ids)), page_size + 2)
         self.assertEqual(self.client.get(self.url, {"page": 3}).status_code, 404)
 
     def test_rate_limit(self):

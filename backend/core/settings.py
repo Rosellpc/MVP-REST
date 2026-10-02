@@ -46,9 +46,13 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts.apps.AccountsConfig",
     "catalog.apps.CatalogConfig",
+    "orders.apps.OrdersConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
+
+# El checkout de esta fase simula pagos y no genera producción ni movimientos de stock.
+ORDER_DEMO_ENABLED = env.bool("ORDER_DEMO_ENABLED", default=DEBUG)
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",

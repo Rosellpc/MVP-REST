@@ -1,5 +1,11 @@
 # RestaurantOS — Plataforma Full Stack de autoservicio y gestión de restaurante
 
+**Flujo del cliente de demostración:** menú → carrito → checkout → confirmación
+persistida en Django. Pago simulado, mesa o recojo, PEN e impuestos incluidos.
+La migración de pedidos debe aplicarse a la base configurada antes de probarlo.
+Consulta los [cambios, activación y pruebas del checkout](docs/checkout-demo.md).
+Esta implementación no realiza cobros reales ni activa producción o inventario.
+
 > **Estado:** base local implementada; dominio y Supabase pendientes · **Versión:** 0.1.0 · **Tipo:** MVP (producto mínimo viable)  
 > **Stack principal:** React + TypeScript + React Router · Django + Django REST Framework · PostgreSQL (Supabase)  
 > **Despliegue propuesto:** Vercel (frontend) + Railway o Render (backend) + Supabase (base de datos)
@@ -7,7 +13,7 @@
 **API pública del menú implementada:** `GET /api/v1/menu/` consulta el catálogo
 persistente configurado en Django. Contrato, filtros, comandos de Git Bash y pruebas
 en [backend/catalog/API.md](backend/catalog/API.md). Esta implementación sustituye
-la carta temporal descrita en la sección de arranque; el frontend sigue pendiente.
+la carta temporal descrita en la sección de arranque; el frontend ya consume esta API.
 
 ## Tabla de contenidos
 

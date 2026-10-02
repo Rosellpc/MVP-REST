@@ -18,6 +18,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "accounts.apps.AccountsConfig",
     "catalog.apps.CatalogConfig",
+    "orders.apps.OrdersConfig",
 ]
 
 MIDDLEWARE = [
@@ -41,3 +42,4 @@ TEMPLATES = [{
 DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}}
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 STATIC_URL = "static/"
+ORDER_DEMO_ENABLED = True
