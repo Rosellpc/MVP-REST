@@ -29,10 +29,7 @@ export default function DishesSection({
           {filteredProducts.map((product) => (
             <DishCard
               key={product.id}
-              name={product.name}
-              category={product.category.name}
-              price={product.sale_price}
-              image_url={product.image_url}
+              product={product}
             />
           ))}
         </div>

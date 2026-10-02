@@ -64,12 +64,20 @@ img {
 .search-box,
 .property-card {
   border: 1px solid var(--glass-border);
-  background:
-    linear-gradient(135deg, rgb(255 255 255 / 9%), transparent 55%),
-    var(--glass-surface);
-  box-shadow: var(--glass-shadow);
-  -webkit-backdrop-filter: blur(24px);
-  backdrop-filter: blur(24px);
+  /* 1. Transparencia de fondo */
+  background: rgba(255, 255, 255, 0.22);
+
+  /* 2. Desenfoque del fondo (Efecto esmerilado principal) */
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+
+  /* 3. Borde claro sutil para simular el bisel del cristal */
+  border: 1px solid rgba(255, 255, 255, 0.35);
+
+  /* 4. Sombra suave para dar elevación tridimensional */
+  box-shadow: 
+    0 15px 35px rgba(0, 0, 0, 0.1),
+    inset 0 0 15px rgba(255, 255, 255, 0.15); /* Brillo interno opcional */
 }
 
 .header {
@@ -107,8 +115,9 @@ img {
   transition: color 180ms ease, border-color 180ms ease;
 }
 
-.header nav a:hover {
-  color: var(--text);
+.header nav a:hover
+.header nav a:active {
+  color: white;
   border-bottom-color: var(--glass-border);
 }
 
