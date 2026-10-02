@@ -1,4 +1,3 @@
-import Header from "../components/layout/Header";
 import { Link, Navigate } from "react-router";
 import { readAttempt } from "../features/orders/checkoutAttempt";
 import { useCart } from "../features/cart/CartContext";
@@ -10,8 +9,6 @@ export default function CartPage() {
   if (readAttempt()) return <Navigate to="/checkout" replace />;
 
   return (
-    <div className="app">
-      <Header />
       <main className="main-content cart-page">
         <p className="eyebrow">Tu pedido · Paso 1 de 2</p>
         <h1>Tu carrito</h1>
@@ -64,6 +61,5 @@ export default function CartPage() {
           </div>
         )}
       </main>
-    </div>
   );
 }

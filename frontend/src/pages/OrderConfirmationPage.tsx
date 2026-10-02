@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router";
-import Header from "../components/layout/Header";
 import { getOrder, type Order } from "../features/orders/orderApi";
 
 export default function OrderConfirmationPage() {
@@ -30,8 +29,6 @@ export default function OrderConfirmationPage() {
   }, [publicCode, version]);
 
   return (
-    <div className="app">
-      <Header />
       <main className="main-content cart-page">
         <p className="eyebrow">Tu pedido</p>
         {loading ? <p role="status">Consultando confirmación…</p> : error ? (
@@ -56,6 +53,5 @@ export default function OrderConfirmationPage() {
           </section>
         )}
       </main>
-    </div>
   );
 }

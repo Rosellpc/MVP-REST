@@ -1,13 +1,40 @@
 import { Link } from "react-router";
+import "../styles/not-found.css";
 
 export default function NotFoundPage() {
   return (
-    <section>
-      <h1>Página no encontrada</h1>
+    <main className="not-found" aria-labelledby="not-found-title">
+      <section className="not-found__panel">
+        <Link
+          className="not-found__brand"
+          to="/"
+          aria-label="Rest-OS — ir al inicio"
+        >
+          REST-OS
+        </Link>
 
-      <p>La dirección que visitaste no existe.</p>
+        <p className="not-found__code" aria-hidden="true">
+          404
+        </p>
 
-      <Link to="/menu">Volver al menú</Link>
-    </section>
+        <p className="not-found__eyebrow">Página no encontrada</p>
+
+        <p className="not-found__description">
+          El enlace puede haber cambiado o la dirección no existe.
+          Vuelve al menú y encuentra tu próximo favorito.
+        </p>
+
+        <div className="not-found__actions">
+          <Link className="not-found__button" to="/menu">
+            Explorar el menú
+            <span aria-hidden="true">↗</span>
+          </Link>
+
+          <Link className="not-found__secondary" to="/cart">
+            Ver mi carrito
+          </Link>
+        </div>
+      </section>
+    </main>
   );
 }

@@ -1,6 +1,5 @@
 import { useRef, useState, type SubmitEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
-import Header from "../components/layout/Header";
 import { useCart } from "../features/cart/CartContext";
 import { CART_STORAGE_KEY } from "../features/cart/cartState";
 import { createOrder, OrderApiError, type OrderPayload } from "../features/orders/orderApi";
@@ -76,8 +75,6 @@ export default function CheckoutPage() {
   if (items.length === 0 && !pending) return <Navigate to="/cart" replace />;
 
   return (
-    <div className="app">
-      <Header />
       <main className="main-content cart-page">
         <p className="eyebrow">Tu pedido · Paso 2 de 2</p>
         <h1>Confirma tu pedido</h1>
@@ -138,6 +135,5 @@ export default function CheckoutPage() {
             </form>
           )}
       </main>
-    </div>
   );
 }

@@ -1,5 +1,4 @@
 import { useSearchParams } from "react-router";
-import Header from "../components/layout/Header";
 import Hero from "../components/ui/Hero";
 import CategorySidebar from "../components/products/CategorySidebar";
 import DishesSection from "../components/products/DishesSection";
@@ -21,9 +20,6 @@ export default function MenuPage() {
   }
 
   return (
-    <div className="app">
-      <Header />
-
       <main className="main-content">
         <Hero />
 
@@ -60,6 +56,5 @@ export default function MenuPage() {
           </div>
         )}
       </main>
-    </div>
   );
 }

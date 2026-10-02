@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
-import Header from "../components/layout/Header";
 import { useProductDetail } from "../features/catalog/hooks/useProductDetail";
 import { useCart } from "../features/cart/CartContext";
 import { MAX_QUANTITY } from "../features/cart/cartState";
@@ -30,8 +29,6 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <div className="app">
-      <Header />
       <main className="main-content product-detail-page">
         <Link className="catalog-back" to={menuUrl}>← Volver a la carta</Link>
         {loading ? <p role="status">Cargando producto…</p> : error ? (
@@ -77,6 +74,5 @@ export default function ProductDetailPage() {
           </>
         )}
       </main>
-    </div>
   );
 }
