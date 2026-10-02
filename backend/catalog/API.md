@@ -1,5 +1,10 @@
 # API pública del menú
 
+**Detalle de producto:** `GET /api/v1/menu/<id>/` añade ingredientes, información
+nutricional y alérgenos a los campos públicos del producto. Requiere aplicar la
+migración `0003` y completar los datos en Django Admin. Consulta la
+[guía de categorías y fichas](../../docs/menu-product-details.md).
+
 `GET /api/v1/menu/` permite consultar el catálogo sin iniciar sesión.
 Usa la base configurada en Django (PostgreSQL en Supabase en desarrollo).
 No necesita habilitar la Data API de Supabase ni instalar paquetes adicionales.

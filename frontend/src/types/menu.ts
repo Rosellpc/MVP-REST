@@ -21,6 +21,11 @@ export type MenuResponse = {
 };
 
 export type MenuFilters = {
-  name: string;
   category: string; // ID de categoría; "" significa todas.
+};
+
+export type ProductDetail = Product & {
+  ingredients: string;
+  nutritional_information: string;
+  allergens: string;
 };

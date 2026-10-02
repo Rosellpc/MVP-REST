@@ -22,6 +22,14 @@ class MenuProductSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
 
+class MenuProductDetailSerializer(MenuProductSerializer):
+    class Meta(MenuProductSerializer.Meta):
+        fields = MenuProductSerializer.Meta.fields + (
+            "ingredients", "nutritional_information", "allergens",
+        )
+        read_only_fields = fields
+
+
 class MenuQuerySerializer(serializers.Serializer):
     category = serializers.IntegerField(
         required=False, min_value=1, max_value=9223372036854775807

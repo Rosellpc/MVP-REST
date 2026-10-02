@@ -66,6 +66,18 @@ class Product(models.Model):
     )
     name = models.CharField("nombre", max_length=150)
     description = models.TextField("descripción", blank=True)
+    ingredients = models.TextField(
+        "ingredientes", blank=True, default="",
+        help_text="Ingredientes declarados por el restaurante. Puedes escribir uno por línea.",
+    )
+    nutritional_information = models.TextField(
+        "información nutricional", blank=True, default="",
+        help_text="Indica la porción de referencia, cantidades y unidades. No introduzcas valores estimados sin verificar.",
+    )
+    allergens = models.TextField(
+        "alérgenos", blank=True, default="",
+        help_text="Información verificada de alérgenos y posibles trazas. Vacío significa información no disponible, no ausencia de alérgenos.",
+    )
     image_url = models.URLField(
         "URL de la imagen",
         max_length=2045,

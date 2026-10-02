@@ -1,11 +1,12 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router";
+import { RouterProvider } from "react-router";
 
-import App from "./App";
 import CartProvider from "./features/cart/CartProvider";
+import router from "./router/router";
 import "./index.css";
 import "./styles/checkout.css";
+import "./styles/catalog.css";
 
 const rootElement = document.getElementById("root");
 
@@ -15,10 +16,8 @@ if (!rootElement) {
 
 createRoot(rootElement).render(
   <StrictMode>
-    <BrowserRouter>
-      <CartProvider>
-        <App />
-      </CartProvider>
-    </BrowserRouter>
+    <CartProvider>
+      <RouterProvider router={router} />
+    </CartProvider>
   </StrictMode>,
 );

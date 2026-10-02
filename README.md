@@ -1,5 +1,8 @@
 # RestaurantOS — Plataforma Full Stack de autoservicio y gestión de restaurante
 
+**Menú por categorías y fichas de producto:** barra lateral, enlaces individuales e
+información alimentaria editable. [Activación y pruebas](docs/menu-product-details.md).
+
 **Flujo del cliente de demostración:** menú → carrito → checkout → confirmación
 persistida en Django. Pago simulado, mesa o recojo, PEN e impuestos incluidos.
 La migración de pedidos debe aplicarse a la base configurada antes de probarlo.

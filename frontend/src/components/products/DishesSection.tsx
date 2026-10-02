@@ -5,25 +5,27 @@ import type { MenuFilters, Product } from "../../types/menu";
 type DishesSectionProps = {
   products: Product[];
   filters: MenuFilters;
+  title: string;
 };
 
 export default function DishesSection({
   products,
   filters,
+  title,
 }: DishesSectionProps) {
   const filteredProducts = filterProducts(products, filters);
 
   return (
     <section className="properties-section">
       <div className="section-title">
-        <h3>Nuestra carta</h3>
+        <h2>{title}</h2>
         <p role="status">
-          {filteredProducts.length} productos encontrados
+          {filteredProducts.length} {filteredProducts.length === 1 ? "producto" : "productos"}
         </p>
       </div>
 
       {filteredProducts.length === 0 ? (
-        <p>No se encontraron productos con esos filtros.</p>
+        <p>No hay productos disponibles en esta categoría. Selecciona otra categoría de la barra lateral.</p>
       ) : (
         <div className="properties-grid">
           {filteredProducts.map((product) => (

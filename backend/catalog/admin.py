@@ -69,6 +69,12 @@ class ProductAdmin(admin.ModelAdmin):
             },
         ),
         (
+            "Ingredientes e información alimentaria",
+            {
+                "fields": ("ingredients", "nutritional_information", "allergens"),
+            },
+        ),
+        (
             "Preparación y venta",
             {
                 "fields": (

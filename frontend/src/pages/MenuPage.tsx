@@ -1,22 +1,24 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router";
 import Header from "../components/layout/Header";
 import Hero from "../components/ui/Hero";
-import SearchBox from "../components/ui/SearchBox";
+import CategorySidebar from "../components/products/CategorySidebar";
 import DishesSection from "../components/products/DishesSection";
 import { getProductCategories } from "../utils/filterProducts.ts";
 import { useMenuProducts } from "../features/catalog/hooks/useMenuProducts";
-import type { MenuFilters } from "../types/menu";
 
 export default function MenuPage() {
-  const [filters, setFilters] = useState<MenuFilters>({
-    name: "",
-    category: "",
-  });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const selectedCategory = searchParams.get("category") ?? "";
 
   const { products, loading, error, retry } = useMenuProducts();
 
   // Genera opciones únicas a partir de la carta completa.
   const categories = getProductCategories(products);
+  const selectedName = categories.find((category) => String(category.id) === selectedCategory)?.name;
+
+  function selectCategory(category: string) {
+    setSearchParams(category ? { category } : {});
+  }
 
   return (
     <div className="app">
@@ -42,18 +44,20 @@ export default function MenuPage() {
             No hay productos disponibles en este momento.
           </p>
         ) : (
-          <>
-            <SearchBox
+          <div className="catalog-layout">
+            <CategorySidebar
               categories={categories}
-              appliedFilters={filters}
-              onSearch={setFilters}
+              products={products}
+              selectedCategory={selectedCategory}
+              onSelect={selectCategory}
             />
 
             <DishesSection
               products={products}
-              filters={filters}
+              filters={{ category: selectedCategory }}
+              title={selectedName ?? (selectedCategory ? "Categoría no disponible" : "Nuestra carta")}
             />
-          </>
+          </div>
         )}
       </main>
     </div>
