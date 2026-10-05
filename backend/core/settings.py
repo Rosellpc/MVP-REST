@@ -51,6 +51,13 @@ INSTALLED_APPS = [
 
 AUTH_USER_MODEL = "accounts.User"
 
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://127.0.0.1:5173"] if DEBUG else [])
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
+
 # El checkout de esta fase simula pagos y no genera producción ni movimientos de stock.
 ORDER_DEMO_ENABLED = env.bool("ORDER_DEMO_ENABLED", default=DEBUG)
 
