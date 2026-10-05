@@ -59,3 +59,13 @@ class TicketEvent(models.Model):
 
     class Meta:
         ordering = ["created_at", "pk"]
+
+
+class CancellationRequest(models.Model):
+    order = models.OneToOneField("orders.Order", on_delete=models.PROTECT, related_name="cancellation_request")
+    ticket = models.ForeignKey(ProductionTicket, on_delete=models.PROTECT)
+    requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="cancellation_requests")
+    reason = models.CharField(max_length=500)
+    created_at = models.DateTimeField(auto_now_add=True)
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name="approved_cancellations")

@@ -1,5 +1,7 @@
 import { Link, useSearchParams } from "react-router";
 import type { Product } from "../../types/menu";
+import { rememberMenuPosition } from "../../features/catalog/menuScroll";
+import { prefetchProduct } from "../../features/catalog/productDetailStore";
 
 export default function DishCard({ product }: { product: Product }) {
   const [searchParams] = useSearchParams();
@@ -8,7 +10,7 @@ export default function DishCard({ product }: { product: Product }) {
 
   return (
     <article className="property-card">
-      <Link className="product-card-link" to={`/menu/${product.id}${query}`} aria-label={`Ver detalles de ${product.name}`}>
+      <Link className="product-card-link" onMouseEnter={() => prefetchProduct(product.id)} onFocus={() => prefetchProduct(product.id)} onPointerDown={() => prefetchProduct(product.id)} onClick={() => rememberMenuPosition(category ?? "")} to={`/menu/${product.id}${query}`} aria-label={`Ver detalles de ${product.name}`}>
       <img src={product.image_url || "/images/menu/table.webp"} alt={product.name} loading="lazy" />
       <div className="property-card-content">
         <h3>{product.name}</h3>

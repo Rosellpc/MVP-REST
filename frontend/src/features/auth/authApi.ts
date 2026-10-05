@@ -1,4 +1,5 @@
 export type StaffUser = {
+  is_superuser: boolean;
   id: number;
   username: string;
   display_name: string;

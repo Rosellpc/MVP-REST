@@ -1,5 +1,44 @@
 # Tickets de demostración: activación y API
 
+## Tableros y controles actuales
+
+Cocina/Barra mantiene cuatro columnas. Un ticket con cancellation_pending=true
+se muestra en Cancelados con la etiqueta Pendiente de cancelación; el estado de
+preparación persistido no se cancela hasta la aprobación. La solicitud pausa todo
+el pedido y solo puede originarse desde Pendientes o En preparación.
+
+Admin dispone de dos filas: filtros por estado y gestión de cancelaciones.
+Ítems por cancelar muestra las solicitudes; Cancelar órdenes permite al superusuario
+cancelar directamente un pedido PENDING/IN_PROGRESS con motivo obligatorio, enviando
+POST /api/v1/staff/orders/{id}/cancel/ con {"reason": "motivo"}. Sin solicitud previa,
+se crea y aprueba una solicitud auditada dentro de la misma transacción. No se ofrece
+el filtro Cancelado parcialmente. La unidad de cancelación continúa siendo el pedido
+completo, no una línea individual. No requiere migraciones adicionales.
+
+## Cancelación con aprobación del superusuario
+
+El flujo vigente reemplaza la cancelación directa descrita en las secciones anteriores:
+POST /production/tickets/{id}/cancel/ ahora solicita cancelar el pedido completo,
+con motivo obligatorio. Cocina y Barra solo pueden solicitar desde su estación.
+La solicitud es persistente y única por pedido; mientras está pendiente se bloquean
+avances y finalización de sus tickets. Administración la muestra con prioridad.
+
+POST /staff/orders/{id}/cancel/ aprueba la solicitud únicamente si el usuario activo
+es superusuario (is_superuser). El grupo ADMIN por sí solo no basta. Se cancelan y
+archivan todos los tickets en una transacción, con usuario y motivo en auditoría.
+El cliente ve CANCELLED y no recibe el agradecimiento de pedido listo.
+
+GET /production/cancellation-notices/?station=KITCHEN (o BAR) devuelve avisos
+paginados de aprobaciones de pedidos que correspondan a la estación autorizada.
+Los tableros consultan cada cinco segundos y muestran «Cancelación aprobada por el
+administrador». Entendido oculta el aviso durante la visita actual.
+
+Se retiraron la opción Pendiente de aceptación y la liberación manual de la pantalla
+administrativa. Aplicar `python manage.py migrate` para crear CancellationRequest.
+Esta versión no incorpora rechazo de solicitudes: una solicitud pendiente permanece
+pausada hasta su aprobación. No se cancelan pedidos completamente listos mediante
+solicitudes nuevas.
+
 ## Finalizar tickets listos
 
 El botón «Finalizado» en Cocina y Barra llama a

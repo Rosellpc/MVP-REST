@@ -1,9 +1,20 @@
 .staff-shell { min-height: 100dvh; }
-.staff-header { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; padding: 1.5rem 2rem; border-bottom: 1px solid var(--glass-border); background: var(--glass-surface); }
+.staff-header { display: flex; flex-wrap: wrap; align-items: center; gap: 1.25rem 2rem; padding: 1.25rem clamp(1rem, 3vw, 2.5rem); border-bottom: 1px solid rgb(255 255 255 / 35%); background: rgb(255 255 255 / 14%); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 15px 35px rgb(0 0 0 / 10%), inset 0 0 15px rgb(255 255 255 / 8%); }
 .staff-brand { letter-spacing: .15em; font-family: var(--font-display); }
-.staff-header nav { display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; }
-.staff-header nav a { padding: .5rem; }
-.staff-header nav a.active { border-bottom: 1px solid var(--text); }
+.staff-header .staff-brand { display: grid; gap: .25rem; flex-shrink: 0; }
+.staff-brand__caption { font-family: var(--font-body); font-size: .7rem; color: var(--text-muted); letter-spacing: .06em; }
+.staff-header nav { display: flex; flex-wrap: wrap; gap: .35rem; flex: 1; }
+.staff-header nav a { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: .6rem 1rem; border: 1px solid transparent; border-radius: 999px; color: var(--text-muted); font-size: .9rem; }
+.staff-header nav a:hover { color: var(--text); background: rgb(255 255 255 / 7%); }
+.staff-header nav a.active { border-color: rgb(255 255 255 / 35%); background: rgb(255 255 255 / 18%); color: var(--text); box-shadow: inset 0 1px 0 rgb(255 255 255 / 15%); }
+.staff-account { display: flex; align-items: center; gap: .75rem; min-width: 0; max-width: 100%; }
+.staff-account__avatar { display: grid; place-items: center; flex-shrink: 0; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--glass-border); background: var(--charcoal-mid); }
+.staff-account__identity { display: grid; gap: .1rem; min-width: 0; }
+.staff-account__label { font-size: .65rem; color: var(--text-muted); }
+.staff-account__name { max-width: 22ch; overflow-wrap: anywhere; font-size: .85rem; }
+.staff-header .staff-logout { display: inline-flex; align-items: center; justify-content: center; gap: .4rem; flex-shrink: 0; padding: .6rem .85rem; border: 1px solid var(--glass-border); background: rgb(30 31 34 / 40%); color: var(--text); font-size: .8rem; }
+.staff-header .staff-logout:hover:not(:disabled) { background: rgb(255 255 255 / 12%); }
+.staff-header-error { margin: 1rem; padding: 1rem; border: 1px solid var(--glass-border); border-radius: 1rem; }
 .staff-content, .staff-state { max-width: 1120px; margin: auto; padding: 2rem; }
 .staff-login { min-height: 100dvh; display: grid; place-items: center; padding: 1rem; }
 .staff-panel { padding: 2rem; border: 1px solid var(--glass-border); border-radius: 1.5rem; background: var(--glass-surface); box-shadow: var(--glass-shadow); }
@@ -14,3 +25,20 @@
 :is(.staff-shell, .staff-login, .staff-state) button { min-height: 44px; padding: .65rem 1.25rem; border: 0; border-radius: 999px; font: inherit; background: var(--text); color: var(--charcoal-deep); cursor: pointer; }
 :is(.staff-shell, .staff-login) button:disabled { opacity: .6; cursor: wait; }
 .staff-areas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 1rem; }
+
+@media (max-width: 760px) {
+  .staff-header { gap: .75rem 1rem; padding: 1rem; }
+  .staff-header .staff-brand { flex-basis: 100%; overflow-wrap: anywhere; }
+  .staff-header nav { order: 1; flex-basis: 100%; gap: .25rem .5rem; }
+  .staff-header nav a { display: inline-flex; align-items: center; min-height: 44px; }
+  .staff-account { width: 100%; }
+  .staff-account__identity { flex: 1; }
+}
+@media (max-width: 380px) {
+  .staff-account { flex-wrap: wrap; }
+  .staff-header .staff-logout { width: 100%; }
+  .staff-header nav a { flex: 1; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .staff-header { background: var(--charcoal); backdrop-filter: none; -webkit-backdrop-filter: none; }
+}

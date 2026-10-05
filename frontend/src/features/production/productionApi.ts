@@ -1,6 +1,7 @@
 import { request, post } from "../auth/authApi.ts";
 
 export type Ticket = {
+  cancellation_pending: boolean;
   id: number; public_code: string; fulfillment: string; table_label: string;
   station_code: "KITCHEN" | "BAR"; status: "PENDING" | "IN_PROGRESS" | "READY" | "CANCELLED";
   demo: boolean; created_at: string;

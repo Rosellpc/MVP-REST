@@ -13,6 +13,37 @@ from .services import release_order_to_production, transition_ticket
 
 @override_settings(PRODUCTION_DEMO_ENABLED=True)
 class ProductionTests(TestCase):
+    def test_direct_cancel_requires_superuser_reason_and_active_order(self):
+        self.release()
+        url = f"/api/v1/staff/orders/{self.order.pk}/cancel/"
+        self.assertEqual(self.client.post(url, {"reason": "Error de pedido"}).status_code, 403)
+        root = get_user_model().objects.create_superuser("direct-root", password="test-password")
+        self.client.force_authenticate(root)
+        self.assertEqual(self.client.post(url, {}).status_code, 400)
+        self.assertEqual(self.client.post(url, {"reason": "Error de pedido"}).status_code, 200)
+        self.order.refresh_from_db()
+        self.assertEqual(self.order.production_status, "CANCELLED")
+        self.assertFalse(self.order.tickets.filter(archived_at__isnull=True).exists())
+        self.assertEqual(self.order.cancellation_request.approved_by, root)
+
+    def test_admin_history_keeps_archived_tickets_and_order_lines(self):
+        self.release()
+        for station in ("KITCHEN", "BAR"):
+            ticket = self.ticket(station)
+            self.action(ticket, "start")
+            self.action(ticket, "complete")
+            self.action(ticket, "finalize")
+        response = self.client.get("/api/v1/staff/orders/")
+        self.assertEqual(response.status_code, 200)
+        order = response.data["results"][0]
+        self.assertEqual(order["production_status"], "READY")
+        self.assertEqual(len(order["items"]), 2)
+        self.assertEqual(len(order["tickets"]), 2)
+        self.assertTrue(all(ticket["archived_at"] for ticket in order["tickets"]))
+        self.assertNotIn("idempotency_key", order)
+        self.client.force_authenticate(self.kitchen)
+        self.assertEqual(self.client.get("/api/v1/staff/orders/").status_code, 403)
+
     def test_finalize_archives_once_and_preserves_public_ready(self):
         self.release()
         for station in ("KITCHEN", "BAR"):
@@ -138,23 +169,44 @@ class ProductionTests(TestCase):
         self.assertEqual(TicketEvent.objects.count(), 6)
         self.assertEqual(self.action(kitchen, "start").status_code, 409)
 
-    def test_cancellation_permissions_reason_and_partial_status(self):
+    def test_cancellation_requires_superuser_approval_and_hides_all_tickets(self):
+        from .models import CancellationRequest
         self.release()
         ticket = self.ticket("KITCHEN")
         self.client.force_authenticate(self.kitchen)
-        self.assertEqual(self.action(ticket, "cancel", {"reason": "test"}).status_code, 403)
-        self.client.force_authenticate(self.admin)
         self.assertEqual(self.action(ticket, "cancel", {"reason": "  "}).status_code, 400)
-        self.assertEqual(self.action(ticket, "cancel", {"reason": "Sin insumos"}).status_code, 200)
+        self.assertEqual(self.action(ticket, "cancel", {"reason": "Missing ingredients"}).status_code, 200)
+        self.assertEqual(self.action(ticket, "cancel", {"reason": "Retry"}).status_code, 200)
+        self.assertEqual(CancellationRequest.objects.count(), 1)
         self.order.refresh_from_db()
-        self.assertEqual(self.order.production_status, "PARTIALLY_CANCELLED")
-        event = ticket.events.last()
-        self.assertEqual(event.actor, self.admin)
-        self.assertEqual(event.reason, "Sin insumos")
+        self.assertEqual(self.order.production_status, "PENDING")
         self.assertEqual(self.action(ticket, "start").status_code, 409)
-        self.action(self.ticket("BAR"), "cancel", {"reason": "Cancelación total"})
+        approval_url = f"/api/v1/staff/orders/{self.order.pk}/cancel/"
+        self.assertEqual(self.client.post(approval_url).status_code, 403)
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(self.client.post(approval_url).status_code, 403)
+        history = self.client.get("/api/v1/staff/orders/").data["results"][0]
+        self.assertEqual(history["cancellation_request"]["reason"], "Missing ingredients")
+        root = get_user_model().objects.create_superuser("root", password="test-password")
+        self.client.force_authenticate(root)
+        self.assertEqual(self.client.post(approval_url).status_code, 200)
+        events = TicketEvent.objects.count()
+        self.assertEqual(self.client.post(approval_url).status_code, 200)
+        self.assertEqual(TicketEvent.objects.count(), events)
         self.order.refresh_from_db()
         self.assertEqual(self.order.production_status, "CANCELLED")
+        self.assertFalse(self.order.tickets.filter(archived_at__isnull=True).exists())
+        for actor, station in ((self.kitchen, "KITCHEN"), (self.bar, "BAR")):
+            self.client.force_authenticate(actor)
+            visible = self.client.get("/api/v1/production/tickets/").data
+            self.assertEqual(visible["count"], 1)
+            self.assertEqual(visible["results"][0]["status"], "CANCELLED")
+            self.assertFalse(visible["results"][0]["cancellation_pending"])
+            notices = self.client.get(f"/api/v1/production/cancellation-notices/?station={station}").data
+            self.assertEqual(notices["count"], 1)
+        event = ticket.events.last()
+        self.assertEqual(event.actor, root)
+        self.assertEqual(event.reason, "Missing ingredients")
 
     def test_ready_ticket_cannot_be_cancelled(self):
         self.release()

@@ -1,7 +1,9 @@
 from django.urls import path
-from .views import StaffOrderList, ReleaseOrderView, TicketList, TicketDetail, TicketAction
+from .views import StaffOrderList, ReleaseOrderView, TicketList, TicketDetail, TicketAction, ApproveCancellationView, CancellationNotices
 
 urlpatterns = [
+    path("staff/orders/<int:pk>/cancel/", ApproveCancellationView.as_view()),
+    path("production/cancellation-notices/", CancellationNotices.as_view()),
     path("production/tickets/<int:pk>/finalize/", TicketAction.as_view(target_status="FINALIZED")),
     path("staff/orders/", StaffOrderList.as_view()),
     path("staff/orders/<int:pk>/release/", ReleaseOrderView.as_view()),

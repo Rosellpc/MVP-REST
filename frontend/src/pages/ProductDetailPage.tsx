@@ -30,8 +30,9 @@ export default function ProductDetailPage() {
 
   return (
       <main className="main-content product-detail-page">
-        <Link className="catalog-back" to={menuUrl}>← Volver a la carta</Link>
-        {loading ? <p role="status">Cargando producto…</p> : error ? (
+        <Link className="catalog-back" to={menuUrl} state={{ restoreMenu: true }}>← Volver a la carta</Link>
+        {product && error && <div role="status"><p>No pudimos actualizar este producto. Se muestra la última información disponible.</p><button className="cart-button" onClick={retry}>Reintentar actualización</button></div>}
+        {loading ? <p role="status">Cargando producto…</p> : error && !product ? (
           <section className="cart-panel">
             <h1>{notFound ? "Producto no disponible" : "No pudimos cargar el producto"}</h1>
             <p role="alert">{error}</p>

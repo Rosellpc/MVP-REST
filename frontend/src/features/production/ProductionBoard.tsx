@@ -13,7 +13,7 @@ function TicketCard({ ticket, refresh, now }: { ticket: Ticket; refresh: () => v
   const [error, setError] = useState("");
   const [reason, setReason] = useState("");
   const canAdvance = user?.permissions.includes(`production.advance_${ticket.station_code.toLowerCase()}_ticket`);
-  const canCancel = user?.permissions.includes("production.cancel_ticket");
+  const canCancel = canAdvance;
   const active = ticket.status === "PENDING" || ticket.status === "IN_PROGRESS";
   async function act(action: "start" | "complete" | "cancel" | "finalize") {
     if (pending) return;
@@ -32,9 +32,11 @@ function TicketCard({ ticket, refresh, now }: { ticket: Ticket; refresh: () => v
     <p><time dateTime={ticket.created_at}>{new Date(ticket.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}</time> · {Math.max(0, Math.floor((now - Date.parse(ticket.created_at)) / 60000))} min desde recepción</p>
     <ul>{ticket.items.map(item => <li key={item.id}><strong>{item.quantity} ×</strong> {item.name}</li>)}</ul>
     {error && <p role="alert">{error}</p>}
-    {ticket.status === "READY" && canAdvance && <button disabled={pending} onClick={() => void act("finalize")}>{pending ? "Finalizando…" : "Finalizado"}</button>}
-    {active && canAdvance && <button disabled={pending} onClick={() => void act(ticket.status === "PENDING" ? "start" : "complete")}>{pending ? "Guardando…" : ticket.status === "PENDING" ? "Iniciar preparación" : "Marcar listo"}</button>}
-    {active && canCancel && <details><summary>Cancelar ticket</summary><label>Motivo<input maxLength={500} value={reason} onChange={event => setReason(event.target.value)} disabled={pending} /></label><button disabled={pending || !reason.trim()} onClick={() => void act("cancel")}>Confirmar cancelación</button></details>}
+    {ticket.cancellation_pending && <p className="cancellation-badge" role="status">Pendiente de cancelación</p>}
+    {ticket.status === "CANCELLED" && <p className="cancellation-badge" role="status">Cancelado · Aprobado por el administrador</p>}
+    {ticket.status === "READY" && canAdvance && !ticket.cancellation_pending && <button disabled={pending || ticket.cancellation_pending} onClick={() => void act("finalize")}>{pending ? "Finalizando…" : "Finalizado"}</button>}
+    {active && canAdvance && !ticket.cancellation_pending && <button disabled={pending || ticket.cancellation_pending} onClick={() => void act(ticket.status === "PENDING" ? "start" : "complete")}>{pending ? "Guardando…" : ticket.status === "PENDING" ? "Iniciar preparación" : "Marcar listo"}</button>}
+    {active && canCancel && !ticket.cancellation_pending && <details><summary>Solicitar cancelación del pedido</summary><label>Motivo<input maxLength={500} value={reason} onChange={event => setReason(event.target.value)} disabled={pending} /></label><button disabled={pending || !reason.trim()} onClick={() => void act("cancel")}>Enviar solicitud al administrador</button></details>}
   </article>;
 }
 
@@ -55,8 +57,14 @@ export default function ProductionBoard({ station }: { station: "KITCHEN" | "BAR
     {error && <p role="alert">{error} Los datos visibles pueden estar desactualizados.</p>}
     {!loading && data?.length === 0 && <p>No hay tickets para esta estación.</p>}
     <div className="production-columns">{Object.entries(columns).map(([status, label]) => {
-      const tickets = data?.filter(ticket => ticket.status === status) ?? [];
-      return <section key={status}><h2>{label} <span>({tickets.length})</span></h2>{tickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} refresh={refresh} now={updatedAt?.getTime() ?? 0} />)}</section>;
+      const tickets = data?.filter(ticket => (ticket.cancellation_pending ? "CANCELLED" : ticket.status) === status) ?? [];
+      return <section className="production-column" key={status} aria-labelledby={`status-${status}`}>
+        <h2 className="production-status" id={`status-${status}`}>
+          <span>{label}</span><span className="production-status__count" aria-label={`${tickets.length} tickets`}>{tickets.length}</span>
+        </h2>
+        {tickets.map(ticket => <TicketCard key={ticket.id} ticket={ticket} refresh={refresh} now={updatedAt?.getTime() ?? 0} />)}
+        {!loading && !error && tickets.length === 0 && <p className="production-column__empty">Sin tickets en este estado</p>}
+      </section>;
     })}</div>
   </main>;
 }

@@ -1,4 +1,5 @@
 import type { Category, Product } from "../../types/menu";
+import { useMemo } from "react";
 
 type CategorySidebarProps = {
   categories: Category[];
@@ -8,10 +9,13 @@ type CategorySidebarProps = {
 };
 
 export default function CategorySidebar({ categories, products, selectedCategory, onSelect }: CategorySidebarProps) {
-  const counts = new Map<number, number>();
+  const counts = useMemo(() => {
+  const result = new Map<number, number>();
   for (const product of products) {
-    counts.set(product.category.id, (counts.get(product.category.id) ?? 0) + 1);
+    result.set(product.category.id, (result.get(product.category.id) ?? 0) + 1);
   }
+  return result;
+  }, [products]);
 
   return (
     <aside className="category-sidebar" aria-labelledby="category-heading">

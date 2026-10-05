@@ -5,7 +5,7 @@ from django.utils import timezone
 from rest_framework.exceptions import APIException, PermissionDenied, ValidationError
 
 from orders.models import Order
-from .models import ProductionTicket, ProductionTicketItem, TicketEvent
+from .models import ProductionTicket, ProductionTicketItem, TicketEvent, CancellationRequest
 from .permissions import require_permission
 
 
@@ -79,6 +79,8 @@ def finalize_ticket(ticket_id, actor):
     require_permission(actor, f"advance_{reference.station_code.lower()}_ticket")
     Order.objects.select_for_update().get(pk=reference.order_id)
     ticket = ProductionTicket.objects.select_for_update().get(pk=ticket_id)
+    if CancellationRequest.objects.filter(order_id=ticket.order_id, approved_at__isnull=True).exists():
+        raise Conflict("El pedido tiene una solicitud de cancelación pendiente.")
     if ticket.status != "READY":
         raise Conflict("Solo puedes finalizar tickets listos.")
     if ticket.archived_at is None:
@@ -90,6 +92,8 @@ def finalize_ticket(ticket_id, actor):
 
 @transaction.atomic
 def transition_ticket(ticket_id, actor, target_status, reason=""):
+    if target_status == "CANCELLED":
+        raise PermissionDenied("La cancelación requiere una solicitud y aprobación del superusuario.")
     require_demo_enabled()
     # All operations acquire the order lock first, serializing cross-station aggregation.
     reference = get_object_or_404(ProductionTicket, pk=ticket_id)
@@ -97,6 +101,8 @@ def transition_ticket(ticket_id, actor, target_status, reason=""):
     require_permission(actor, permission)
     order = Order.objects.select_for_update().get(pk=reference.order_id)
     ticket = ProductionTicket.objects.select_for_update().get(pk=ticket_id)
+    if CancellationRequest.objects.filter(order=order, approved_at__isnull=True).exists():
+        raise Conflict("El pedido tiene una solicitud de cancelación pendiente.")
     reason = reason.strip()
     if target_status == "CANCELLED" and (not reason or len(reason) > 500):
         raise ValidationError({"reason": "Indica un motivo de entre 1 y 500 caracteres."})
@@ -114,3 +120,54 @@ def transition_ticket(ticket_id, actor, target_status, reason=""):
     order.production_status = aggregate_status(order)
     order.save(update_fields=["production_status"])
     return ticket
+
+
+@transaction.atomic
+def request_cancellation(ticket_id, actor, reason):
+    require_demo_enabled()
+    ticket = get_object_or_404(ProductionTicket, pk=ticket_id)
+    require_permission(actor, f"advance_{ticket.station_code.lower()}_ticket")
+    order = Order.objects.select_for_update().get(pk=ticket.order_id)
+    ticket.refresh_from_db()
+    reason = reason.strip()
+    if not reason or len(reason) > 500:
+        raise ValidationError({"reason": "Indica un motivo de entre 1 y 500 caracteres."})
+    existing = CancellationRequest.objects.filter(order=order).first()
+    if existing:
+        return existing
+    if ticket.status not in ("PENDING", "IN_PROGRESS") or ticket.archived_at or order.production_status in ("READY", "CANCELLED"):
+        raise Conflict("El pedido ya terminó y no admite solicitudes de cancelación.")
+    return CancellationRequest.objects.create(order=order, ticket=ticket, requested_by=actor, reason=reason)
+
+
+@transaction.atomic
+def approve_cancellation(order_id, actor, reason=""):
+    require_demo_enabled()
+    if not actor.is_authenticated or not actor.is_active or not actor.is_superuser:
+        raise PermissionDenied("Solo un superusuario puede aprobar la cancelación.")
+    order = get_object_or_404(Order.objects.select_for_update(), pk=order_id)
+    cancellation = CancellationRequest.objects.filter(order=order).first()
+    if cancellation is None:
+        reason = reason.strip()
+        if not reason or len(reason) > 500:
+            raise ValidationError({"reason": "Indica un motivo de entre 1 y 500 caracteres."})
+        ticket = order.tickets.filter(archived_at__isnull=True).first()
+        if ticket is None or order.production_status not in ("PENDING", "IN_PROGRESS"):
+            raise Conflict("Solo se pueden cancelar directamente pedidos pendientes o en preparación.")
+        cancellation = CancellationRequest.objects.create(order=order, ticket=ticket, requested_by=actor, reason=reason)
+    if cancellation.approved_at:
+        return cancellation
+    now = timezone.now()
+    for ticket in order.tickets.select_for_update().all():
+        previous = ticket.status
+        ticket.status = "CANCELLED"
+        ticket.cancelled_at = now
+        ticket.archived_at = now
+        ticket.save(update_fields=["status", "cancelled_at", "archived_at"])
+        TicketEvent.objects.create(ticket=ticket, actor=actor, from_status=previous, to_status="CANCELLED", reason=cancellation.reason)
+    cancellation.approved_at = now
+    cancellation.approved_by = actor
+    cancellation.save(update_fields=["approved_at", "approved_by"])
+    order.production_status = "CANCELLED"
+    order.save(update_fields=["production_status"])
+    return cancellation
