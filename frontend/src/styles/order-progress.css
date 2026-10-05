@@ -1,0 +1,10 @@
+.order-tracker { margin: 1.5rem 0; padding: clamp(1rem, 3vw, 1.5rem); border: 1px solid var(--glass-border); border-radius: 1.25rem; background: var(--glass-surface); }
+.order-tracker h2 { font-size: 1.15rem; font-weight: 500; }
+.order-tracker__steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); list-style: none; padding: 0; margin: 1.5rem 0; }
+.order-tracker__steps li { position: relative; display: flex; flex-direction: column; align-items: center; gap: .7rem; text-align: center; color: var(--text-muted); font-size: .85rem; }
+.order-tracker__steps li + li::before { content: ""; position: absolute; height: 3px; top: 18px; right: 50%; width: 100%; background: #46574c; }
+.order-tracker__steps li.is-complete::before { background: #4ade80; }
+.order-tracker__dot { position: relative; z-index: 1; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; border: 2px solid #678b72; background: var(--charcoal-deep); font-weight: 600; }
+.order-tracker__steps .is-complete { color: #86efac; }
+.is-complete .order-tracker__dot { background: #4ade80; color: #122719; border-color: #4ade80; }
+.order-tracker p { color: var(--text-muted); font-size: .9rem; }

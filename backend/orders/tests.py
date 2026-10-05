@@ -11,6 +11,39 @@ from .models import Order, OrderItem
 
 
 class DemoCheckoutTests(APITestCase):
+    def test_checkout_automatically_releases_once(self):
+        from production.models import ProductionTicket, TicketEvent
+        key = str(uuid4())
+        first = self.create_order(key=key)
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(first.data["production_status"], "PENDING")
+        second = self.create_order(key=key)
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(ProductionTicket.objects.count(), 1)
+        event = TicketEvent.objects.get()
+        self.assertEqual(event.source, "CHECKOUT")
+        self.assertIsNone(event.actor)
+
+    @override_settings(PRODUCTION_DEMO_ENABLED=False)
+    def test_disabled_production_does_not_create_order(self):
+        self.assertEqual(self.create_order().status_code, 400)
+        self.assertFalse(Order.objects.exists())
+
+    def test_checkout_release_failure_rolls_back_order(self):
+        from unittest.mock import patch
+        from production.models import ProductionTicket
+        with patch("production.services.TicketEvent.objects.create", side_effect=RuntimeError("failure")):
+            with self.assertRaises(RuntimeError):
+                self.create_order()
+        self.assertFalse(Order.objects.exists())
+        self.assertFalse(ProductionTicket.objects.exists())
+
+    def test_delivery_cannot_create_unroutable_order(self):
+        station = Station.objects.create(code="DELIVERY", name="Entrega")
+        Product.objects.filter(pk=self.product.pk).update(station=station)
+        self.assertEqual(self.create_order().status_code, 400)
+        self.assertFalse(Order.objects.exists())
+
     @classmethod
     def setUpTestData(cls):
         cls.category = Category.objects.create(name="Platos")

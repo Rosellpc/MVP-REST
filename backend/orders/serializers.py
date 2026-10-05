@@ -56,4 +56,4 @@ class PublicOrderSerializer(serializers.ModelSerializer):
         model = Order
         # La consulta pública no expone nombre del cliente, mesa ni clave idempotente.
         fields = ["public_code", "status", "payment_status", "currency", "total",
-                  "created_at", "fulfillment", "items", "demo", "prices_include_taxes"]
+                  "created_at", "fulfillment", "items", "demo", "prices_include_taxes", "production_status"]

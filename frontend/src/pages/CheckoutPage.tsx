@@ -78,7 +78,7 @@ export default function CheckoutPage() {
       <main className="main-content cart-page">
         <p className="eyebrow">Tu pedido · Paso 2 de 2</p>
         <h1>Confirma tu pedido</h1>
-        <p className="demo-notice">Demostración: el pago es simulado. No se cobrará dinero ni se enviará el pedido a cocina.</p>
+        <p className="demo-notice">Demostración: al confirmar se enviarán tickets de prueba a Cocina y Barra según tus productos. No se cobrará dinero ni se realizarán preparaciones reales.</p>
         {error && <p className="checkout-error" role="alert">{error}</p>}
         {pending ? (
           <section className="cart-panel">
