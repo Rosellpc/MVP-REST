@@ -1,0 +1,7 @@
+.order-farewell { flex: 1; width: 100%; min-height: 65dvh; display: grid; place-items: center; padding: clamp(1rem, 4vw, 3rem); }
+.order-farewell__panel { width: 100%; max-width: 680px; padding: clamp(1.5rem, 5vw, 3rem); border: 1px solid var(--glass-border); border-radius: 2rem; background: var(--glass-surface); box-shadow: var(--glass-shadow); text-align: center; }
+.order-farewell__check { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 1.5rem; border-radius: 50%; background: #4ade80; color: #122719; font-size: 2rem; }
+.order-farewell h1 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 400; line-height: 1.25; text-wrap: balance; }
+.order-farewell__message { font-size: 1.1rem; line-height: 1.8; }
+.order-farewell__hint { color: var(--text-muted); font-size: .85rem; }
+.order-farewell__actions { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 1rem; margin-top: 1.5rem; }

@@ -20,6 +20,7 @@ export type Order = OrderQuote & {
   payment_status: "SIMULATED";
   fulfillment: "DINE_IN" | "PICKUP";
   created_at: string;
+  production_status: "NOT_RELEASED" | "PENDING" | "IN_PROGRESS" | "READY" | "CANCELLED" | "PARTIALLY_CANCELLED";
 };
 
 export type OrderPayload = {

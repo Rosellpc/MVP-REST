@@ -14,16 +14,20 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=80)
     fulfillment = models.CharField(max_length=10, choices=Fulfillment.choices)
     table_label = models.CharField(max_length=20, blank=True)
-    # Este flujo es exclusivamente una demostración; no libera producción.
+    # El checkout no libera producción; requiere una acción interna explícita.
     status = models.CharField(max_length=20, default="DEMO_CONFIRMED", editable=False)
     payment_status = models.CharField(max_length=20, default="SIMULATED", editable=False)
     currency = models.CharField(max_length=3, default="PEN", editable=False)
     total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
+    production_status = models.CharField(max_length=24, default="NOT_RELEASED", editable=False)
+    released_at = models.DateTimeField(null=True, blank=True, editable=False)
+    released_by = models.ForeignKey("accounts.User", null=True, blank=True, on_delete=models.PROTECT, related_name="released_orders", editable=False)
 
     class Meta:
         ordering = ["-created_at"]
         constraints = [
+            models.CheckConstraint(condition=models.Q(production_status__in=["NOT_RELEASED", "PENDING", "IN_PROGRESS", "READY", "CANCELLED", "PARTIALLY_CANCELLED"]), name="order_valid_production_status"),
             models.CheckConstraint(condition=models.Q(total__gte=0), name="order_total_nonnegative"),
             models.CheckConstraint(
                 condition=models.Q(fulfillment__in=["DINE_IN", "PICKUP"]),

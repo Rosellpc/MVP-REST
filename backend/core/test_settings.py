@@ -19,6 +19,7 @@ INSTALLED_APPS = [
     "accounts.apps.AccountsConfig",
     "catalog.apps.CatalogConfig",
     "orders.apps.OrdersConfig",
+    "production.apps.ProductionConfig",
 ]
 
 MIDDLEWARE = [
@@ -44,3 +45,4 @@ DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memor
 PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 STATIC_URL = "static/"
 ORDER_DEMO_ENABLED = True
+PRODUCTION_DEMO_ENABLED = True

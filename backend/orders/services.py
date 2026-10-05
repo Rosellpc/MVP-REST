@@ -1,6 +1,7 @@
 import hashlib
 import json
 from decimal import Decimal
+from django.conf import settings
 
 from django.db import IntegrityError, transaction
 from rest_framework.exceptions import APIException, ValidationError
@@ -53,6 +54,9 @@ def create_demo_order(data, idempotency_key):
     if existing:
         return replay(existing)
 
+    if not getattr(settings, "PRODUCTION_DEMO_ENABLED", False):
+        raise ValidationError({"detail": "La preparación de demostración no está habilitada. No se ha creado el pedido."})
+
     try:
         with transaction.atomic():
             # La unicidad de la clave también protege dos solicitudes concurrentes.
@@ -62,11 +66,16 @@ def create_demo_order(data, idempotency_key):
                 table_label=data["table_label"],
             )
             lines, total = build_quote(data["items"], lock=True)
+            if any(line["station_code"] not in ("KITCHEN", "BAR") for line in lines):
+                raise ValidationError({"detail": "Hay productos sin estación de cocina o barra. Retíralos del carrito o consulta al personal."})
             if total != data["expected_total"]:
                 raise OrderConflict("Los precios cambiaron. Actualiza el resumen y confirma el nuevo total.")
             OrderItem.objects.bulk_create([OrderItem(order=order, **line) for line in lines])
             order.total = total
             order.save(update_fields=["total"])
+            from production.services import release_checkout_order
+            release_checkout_order(order.pk)
+            order.refresh_from_db()
             return order, True
     except IntegrityError:
         existing = Order.objects.filter(idempotency_key=idempotency_key).first()

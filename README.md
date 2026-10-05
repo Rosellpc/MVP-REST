@@ -1,5 +1,12 @@
 # RestaurantOS — Plataforma Full Stack de autoservicio y gestión de restaurante
 
+**Acceso del personal:** autenticación por sesión, CSRF, roles ADMIN/KITCHEN/BAR y
+rutas internas protegidas. [Activación, permisos y pruebas](docs/production-flow.md).
+**Producción de demostración:** API interna de tickets por estación, liberación manual
+y transiciones auditadas. [Activación y contrato](docs/production-api.md).
+Las pantallas de Cocina y Barra muestran tickets y permiten avanzar su preparación.
+Administración libera pedidos de prueba; el cliente consulta el estado agregado.
+
 **Menú por categorías y fichas de producto:** barra lateral, enlaces individuales e
 información alimentaria editable. [Activación y pruebas](docs/menu-product-details.md).
 

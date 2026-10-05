@@ -1,0 +1,16 @@
+.staff-shell { min-height: 100dvh; }
+.staff-header { display: flex; flex-wrap: wrap; align-items: center; gap: 1.5rem; padding: 1.5rem 2rem; border-bottom: 1px solid var(--glass-border); background: var(--glass-surface); }
+.staff-brand { letter-spacing: .15em; font-family: var(--font-display); }
+.staff-header nav { display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; }
+.staff-header nav a { padding: .5rem; }
+.staff-header nav a.active { border-bottom: 1px solid var(--text); }
+.staff-content, .staff-state { max-width: 1120px; margin: auto; padding: 2rem; }
+.staff-login { min-height: 100dvh; display: grid; place-items: center; padding: 1rem; }
+.staff-panel { padding: 2rem; border: 1px solid var(--glass-border); border-radius: 1.5rem; background: var(--glass-surface); box-shadow: var(--glass-shadow); }
+.staff-login .staff-panel { width: 100%; max-width: 460px; }
+.staff-login form, .staff-login label { display: grid; gap: .75rem; }
+.staff-login form { gap: 1.25rem; margin: 1.5rem 0; }
+.staff-login input { width: 100%; min-width: 0; padding: .85rem; border-radius: .75rem; border: 1px solid var(--glass-border); color: var(--text); background: var(--charcoal-deep); font: inherit; }
+:is(.staff-shell, .staff-login, .staff-state) button { min-height: 44px; padding: .65rem 1.25rem; border: 0; border-radius: 999px; font: inherit; background: var(--text); color: var(--charcoal-deep); cursor: pointer; }
+:is(.staff-shell, .staff-login) button:disabled { opacity: .6; cursor: wait; }
+.staff-areas { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 1rem; }
