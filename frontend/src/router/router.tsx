@@ -6,7 +6,7 @@ import RequirePermission from "../features/auth/RequirePermission";
 import LoginPage from "../pages/LoginPage";
 import ProductionBoard from "../features/production/ProductionBoard";
 import { StaffHomePage } from "../pages/StaffPage";
-import ReleaseOrders from "../features/production/ReleaseOrders";
+import ReleaseOrders from "../features/production/AdminOrderHistory";
 
 import MenuPage from "../pages/MenuPage";
 import ProductDetailPage from "../pages/ProductDetailPage";

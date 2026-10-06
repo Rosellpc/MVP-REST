@@ -62,6 +62,9 @@ class TicketEvent(models.Model):
 
 
 class CancellationRequest(models.Model):
+    rejected_at = models.DateTimeField(null=True, blank=True)
+    rejected_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, null=True, blank=True, related_name="rejected_cancellations")
+    rejection_reason = models.CharField(max_length=500, blank=True)
     order = models.OneToOneField("orders.Order", on_delete=models.PROTECT, related_name="cancellation_request")
     ticket = models.ForeignKey(ProductionTicket, on_delete=models.PROTECT)
     requested_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="cancellation_requests")

@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [pending, setPending] = useState(false);
   if (loading) return <main className="staff-state" role="status">Comprobando sesión…</main>;
-  if (user && !sessionError) return <Navigate to="/staff" replace />;
+  if (user) return <Navigate to="/staff" replace />;
   return <main className="staff-login"><section className="staff-panel">
     <Link to="/menu" className="staff-brand">REST-OS</Link>
     <h1>Acceso del personal</h1><p>Ingresa con la cuenta asignada por administración.</p>

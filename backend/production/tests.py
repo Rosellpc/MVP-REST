@@ -13,6 +13,76 @@ from .services import release_order_to_production, transition_ticket
 
 @override_settings(PRODUCTION_DEMO_ENABLED=True)
 class ProductionTests(TestCase):
+    def test_history_query_count_does_not_grow_per_order(self):
+        from django.db import connection
+        from django.test.utils import CaptureQueriesContext
+        self.release()
+        self.action(self.ticket("KITCHEN"), "cancel", {"reason": "Review"})
+        # Warm permission caches, then compare one order against a full page.
+        self.client.get("/api/v1/staff/orders/")
+        with CaptureQueriesContext(connection) as baseline:
+            self.client.get("/api/v1/staff/orders/")
+        for _ in range(19):
+            order = Order.objects.create(idempotency_key=uuid4(), request_hash="x", customer_name="Test", fulfillment="PICKUP")
+            OrderItem.objects.create(order=order, product=Product.objects.get(sku="KITCHEN"), name="Test", station_code="KITCHEN", unit_price=10, quantity=1, line_total=10)
+            release_order_to_production(order.pk, self.admin)
+        with CaptureQueriesContext(connection) as full_page:
+            self.client.get("/api/v1/staff/orders/")
+        self.assertEqual(len(baseline), len(full_page))
+        self.assertLessEqual(len(full_page), 10)
+
+    def test_rejection_requires_superuser_and_resumes_order(self):
+        self.release()
+        ticket = self.ticket("KITCHEN")
+        self.client.force_authenticate(self.kitchen)
+        self.action(ticket, "cancel", {"reason": "Review"})
+        url = f"/api/v1/staff/orders/{self.order.pk}/reject-cancellation/"
+        self.assertEqual(self.client.post(url, {"reason": "Continue"}).status_code, 403)
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(self.client.post(url, {"reason": "Continue"}).status_code, 403)
+        root = get_user_model().objects.create_superuser("reviewer", password="test")
+        self.client.force_authenticate(root)
+        self.assertEqual(self.client.post(url, {"reason": " "}).status_code, 400)
+        self.assertEqual(self.client.post(url, {"reason": "Ingredients available"}).status_code, 200)
+        count = TicketEvent.objects.count()
+        self.assertEqual(self.client.post(url, {"reason": "Retry"}).status_code, 200)
+        self.assertEqual(TicketEvent.objects.count(), count)
+        self.assertEqual(self.client.post(f"/api/v1/staff/orders/{self.order.pk}/cancel/").status_code, 409)
+        self.client.force_authenticate(self.kitchen)
+        data = self.client.get(f"/api/v1/production/tickets/{ticket.pk}/").data
+        self.assertFalse(data["cancellation_pending"])
+        self.assertEqual(data["cancellation_request"]["rejection_reason"], "Ingredients available")
+        self.assertEqual(self.action(ticket, "start").status_code, 200)
+        self.assertEqual(self.action(ticket, "cancel", {"reason": "New issue"}).status_code, 200)
+        self.assertTrue(self.client.get(f"/api/v1/production/tickets/{ticket.pk}/").data["cancellation_pending"])
+
+    def test_history_paginates_filters_and_counts(self):
+        for _ in range(24):
+            Order.objects.create(idempotency_key=uuid4(), request_hash="x", customer_name="Test", fulfillment="PICKUP", production_status="READY")
+        response = self.client.get("/api/v1/staff/orders/?status=READY")
+        self.assertEqual(response.data["count"], 24)
+        self.assertEqual(len(response.data["results"]), 20)
+        self.assertIsNotNone(response.data["next"])
+        self.assertEqual(len(self.client.get("/api/v1/staff/orders/?status=READY&page=2").data["results"]), 4)
+        self.assertEqual(self.client.get("/api/v1/staff/orders/?status=invalid").status_code, 400)
+        counts = self.client.get("/api/v1/staff/orders/counts/").data
+        self.assertEqual(counts["READY"], 24)
+        self.assertEqual(counts["ALL"], 25)
+        self.release()
+        self.action(self.ticket("KITCHEN"), "cancel", {"reason": "Review"})
+        self.assertEqual(self.client.get("/api/v1/staff/orders/?pending_cancellation=true").data["count"], 1)
+
+    def test_old_cancelled_tickets_leave_board_but_remain_in_history(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        self.release()
+        ticket = self.ticket("KITCHEN")
+        ProductionTicket.objects.filter(pk=ticket.pk).update(status="CANCELLED", cancelled_at=timezone.now() - timedelta(days=2))
+        self.client.force_authenticate(self.kitchen)
+        self.assertEqual(self.client.get("/api/v1/production/tickets/").data["count"], 0)
+        self.client.force_authenticate(self.admin)
+        self.assertEqual(len(self.client.get("/api/v1/staff/orders/").data["results"][0]["tickets"]), 2)
+
     def test_direct_cancel_requires_superuser_reason_and_active_order(self):
         self.release()
         url = f"/api/v1/staff/orders/{self.order.pk}/cancel/"
@@ -199,9 +269,7 @@ class ProductionTests(TestCase):
         for actor, station in ((self.kitchen, "KITCHEN"), (self.bar, "BAR")):
             self.client.force_authenticate(actor)
             visible = self.client.get("/api/v1/production/tickets/").data
-            self.assertEqual(visible["count"], 1)
-            self.assertEqual(visible["results"][0]["status"], "CANCELLED")
-            self.assertFalse(visible["results"][0]["cancellation_pending"])
+            self.assertEqual(visible["count"], 0)
             notices = self.client.get(f"/api/v1/production/cancellation-notices/?station={station}").data
             self.assertEqual(notices["count"], 1)
         event = ticket.events.last()

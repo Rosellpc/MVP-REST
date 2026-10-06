@@ -25,8 +25,8 @@
 .cart-item > strong { font-size: .95rem; white-space: nowrap; }
 .cart-quantity { display: inline-flex; gap: 1rem; align-items: center; }
 .cart-quantity button { width: 44px; height: 44px; border: 1px solid var(--glass-border); border-radius: 50%; background: rgb(255 255 255 / 6%); color: var(--text); font: inherit; cursor: pointer; }
-.cart-button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: .8rem 1.2rem; border: 1px solid rgb(255 255 255 / 65%); border-radius: 999px; background: linear-gradient(135deg, #f5f5f4, #c8c8cb); color: var(--charcoal-deep); font: inherit; font-weight: 500; text-align: center; cursor: pointer; }
-.cart-button:hover { filter: brightness(1.08); }
+.cart-button { display: inline-flex; align-items: center; justify-content: center; min-height: 46px; padding: .8rem 1.2rem; border: 1px solid var(--glass-border); border-radius: 999px; background: var(--button-surface); color: var(--text); box-shadow: var(--button-shadow); font: inherit; font-weight: 500; text-align: center; cursor: pointer; }
+.cart-button:hover:not(:disabled) { background: var(--button-hover); }
 .property-card-content .cart-button { width: 100%; margin-top: 1rem; font-size: .85rem; }
 .cart-text-button { background: transparent; color: var(--text-muted); border: 0; font: inherit; text-decoration: underline; cursor: pointer; padding: .75rem .25rem; }
 .cart-total { display: flex; flex-wrap: wrap; justify-content: space-between; gap: .5rem; border-block: 1px solid var(--glass-border); padding-block: 1rem; }

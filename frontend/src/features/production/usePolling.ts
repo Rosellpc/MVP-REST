@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // Serial polling preserves the last successful response during transient failures.
-export function usePolling<T>(load: (signal: AbortSignal) => Promise<T>) {
+export function usePolling<T>(load: (signal: AbortSignal) => Promise<T>, interval = 5000) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const refreshRef = useRef<() => void>(() => {});
   const refresh = useCallback(() => refreshRef.current(), []);
@@ -18,6 +19,10 @@ export function usePolling<T>(load: (signal: AbortSignal) => Promise<T>) {
       if (controller) { queued = true; return; }
       clearTimeout(timer);
       controller = new AbortController();
+      // Defer notification so initial subscription does not synchronously render.
+      await Promise.resolve();
+      if (stopped) return;
+      setRefreshing(true);
       try {
         const result = await load(controller.signal);
         if (!stopped) { setData(result); setError(""); setUpdatedAt(new Date()); }
@@ -27,7 +32,8 @@ export function usePolling<T>(load: (signal: AbortSignal) => Promise<T>) {
         controller = null;
         if (!stopped) {
           setLoading(false);
-          const delay = queued ? 0 : 5000;
+          setRefreshing(false);
+          const delay = queued ? 0 : interval;
           queued = false;
           timer = setTimeout(() => void run(), delay);
         }
@@ -38,6 +44,7 @@ export function usePolling<T>(load: (signal: AbortSignal) => Promise<T>) {
     document.addEventListener("visibilitychange", visibility);
     void run();
     return () => { stopped = true; controller?.abort(); clearTimeout(timer); document.removeEventListener("visibilitychange", visibility); };
-  }, [load]);
-  return { data, error, loading, updatedAt, refresh };
+  }, [load, interval]);
+  const update = useCallback((change: (current: T | null) => T | null) => setData(change), []);
+  return { data, error, loading, refreshing, updatedAt, refresh, update };
 }

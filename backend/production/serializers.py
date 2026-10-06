@@ -11,7 +11,7 @@ class CancellationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CancellationRequest
-        fields = ["id", "public_code", "station", "requested_by", "reason", "created_at", "approved_at"]
+        fields = ["id", "public_code", "station", "requested_by", "reason", "created_at", "approved_at", "rejected_at", "rejection_reason"]
 
 
 class TicketItemSerializer(serializers.ModelSerializer):
@@ -25,7 +25,9 @@ class TicketSerializer(serializers.ModelSerializer):
 
     def get_cancellation_pending(self, obj):
         cancellation = getattr(obj.order, "cancellation_request", None)
-        return cancellation is not None and cancellation.approved_at is None
+        return cancellation is not None and cancellation.approved_at is None and cancellation.rejected_at is None
+    order_number = serializers.IntegerField(source="order_id", read_only=True)
+    cancellation_request = CancellationSerializer(source="order.cancellation_request", read_only=True)
     items = TicketItemSerializer(many=True, read_only=True)
     public_code = serializers.UUIDField(source="order.public_code", read_only=True)
     fulfillment = serializers.CharField(source="order.fulfillment", read_only=True)
@@ -33,7 +35,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ProductionTicket
-        fields = ["id", "public_code", "fulfillment", "table_label", "station_code", "status", "demo", "created_at", "started_at", "completed_at", "cancelled_at", "archived_at", "items", "cancellation_pending"]
+        fields = ["id", "order_number", "public_code", "fulfillment", "table_label", "station_code", "status", "demo", "created_at", "started_at", "completed_at", "cancelled_at", "archived_at", "items", "cancellation_pending", "cancellation_request"]
 
 
 class StaffOrderSerializer(serializers.ModelSerializer):

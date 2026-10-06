@@ -1,5 +1,5 @@
 from rest_framework.authentication import SessionAuthentication
-from django.db.models import Q
+from django.db.models import Count
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -9,19 +9,46 @@ from orders.models import Order
 from .models import ProductionTicket, CancellationRequest
 from .permissions import CanReadTickets, CanReleaseOrders, allowed_stations
 from .serializers import TicketSerializer, StaffOrderSerializer, CancelSerializer, CancellationSerializer, DirectCancelSerializer
-from .services import release_order_to_production, transition_ticket, finalize_ticket, request_cancellation, approve_cancellation
+from .services import release_order_to_production, transition_ticket, finalize_ticket, request_cancellation, approve_cancellation, reject_cancellation
 
 
 class Pagination(PageNumberPagination):
     page_size = 50
 
 
+class HistoryPagination(PageNumberPagination):
+    page_size = 20
+
+
 class StaffOrderList(ListAPIView):
     authentication_classes = [SessionAuthentication]
     permission_classes = [CanReleaseOrders]
     serializer_class = StaffOrderSerializer
-    pagination_class = Pagination
-    queryset = Order.objects.filter(status="DEMO_CONFIRMED", payment_status="SIMULATED").select_related("cancellation_request__requested_by", "cancellation_request__ticket").prefetch_related("items", "tickets__items", "tickets__order__cancellation_request").order_by("-created_at", "-pk")
+    pagination_class = HistoryPagination
+    queryset = Order.objects.filter(status="DEMO_CONFIRMED", payment_status="SIMULATED").select_related("cancellation_request__requested_by", "cancellation_request__ticket").prefetch_related("items", "tickets__items", "tickets__order__cancellation_request__requested_by", "tickets__order__cancellation_request__ticket").order_by("-created_at", "-pk")
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        status = self.request.query_params.get("status")
+        if status:
+            if status not in ("PENDING", "IN_PROGRESS", "READY", "CANCELLED"):
+                raise ValidationError({"status": "Estado inválido."})
+            queryset = queryset.filter(production_status=status)
+        if self.request.query_params.get("pending_cancellation") == "true":
+            queryset = queryset.filter(cancellation_request__isnull=False, cancellation_request__approved_at__isnull=True, cancellation_request__rejected_at__isnull=True)
+        return queryset
+
+
+class StaffOrderCounts(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [CanReleaseOrders]
+
+    def get(self, request):
+        orders = Order.objects.filter(status="DEMO_CONFIRMED", payment_status="SIMULATED")
+        counts = {row["production_status"]: row["count"] for row in orders.values("production_status").annotate(count=Count("pk"))}
+        counts["ALL"] = sum(counts.values())
+        counts["requests"] = orders.filter(cancellation_request__isnull=False, cancellation_request__approved_at__isnull=True, cancellation_request__rejected_at__isnull=True).count()
+        return Response(counts)
 
 
 class ReleaseOrderView(APIView):
@@ -39,7 +66,7 @@ class TicketQueryset:
     serializer_class = TicketSerializer
 
     def get_queryset(self):
-        queryset = ProductionTicket.objects.filter(station_code__in=allowed_stations(self.request.user)).select_related("order__cancellation_request").prefetch_related("items")
+        queryset = ProductionTicket.objects.filter(station_code__in=allowed_stations(self.request.user)).select_related("order__cancellation_request__requested_by", "order__cancellation_request__ticket").prefetch_related("items")
         station = self.request.query_params.get("station")
         status = self.request.query_params.get("status")
         if station:
@@ -57,7 +84,7 @@ class TicketList(TicketQueryset, ListAPIView):
     pagination_class = Pagination
 
     def get_queryset(self):
-        return super().get_queryset().filter(Q(archived_at__isnull=True) | Q(status="CANCELLED"))
+        return super().get_queryset().filter(archived_at__isnull=True, status__in=["PENDING", "IN_PROGRESS", "READY"])
 
 
 class TicketDetail(TicketQueryset, RetrieveAPIView):
@@ -91,6 +118,16 @@ class ApproveCancellationView(APIView):
         serializer = DirectCancelSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         return Response(CancellationSerializer(approve_cancellation(pk, request.user, serializer.validated_data.get("reason", ""))).data)
+
+
+class RejectCancellationView(APIView):
+    authentication_classes = [SessionAuthentication]
+    permission_classes = [CanReleaseOrders]
+
+    def post(self, request, pk):
+        serializer = CancelSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(CancellationSerializer(reject_cancellation(pk, request.user, serializer.validated_data["reason"])).data)
 
 
 class CancellationNotices(ListAPIView):

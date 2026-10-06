@@ -3,7 +3,7 @@ import { Link, NavLink, Outlet } from "react-router";
 import { useAuth } from "../features/auth/useAuth";
 
 export default function StaffLayout() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, error: sessionError, refresh } = useAuth();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   return <div className="staff-shell">
@@ -25,6 +25,8 @@ export default function StaffLayout() {
         finally { setPending(false); }
       }}><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M9 5H5v14h4M14 8l4 4-4 4M9 12h9" /></svg>{pending ? "Cerrando…" : "Cerrar sesión"}</button>
       </div>
-    </header>{error && <p className="staff-header-error" role="alert">{error}</p>}<Outlet />
+    </header>{error && <p className="staff-header-error" role="alert">{error}</p>}
+    {sessionError && <div className="staff-header-error" role="status">{sessionError} <button onClick={() => void refresh()}>Reintentar conexión</button></div>}
+    <Outlet />
   </div>;
 }

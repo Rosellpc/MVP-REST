@@ -1,5 +1,36 @@
 # Tickets de demostración: activación y API
 
+Actualización de limpieza de tableros: las cancelaciones aprobadas ya no aparecen
+en Cocina/Barra, ni siquiera durante 24 horas. Las solicitudes pendientes siguen
+visibles en la columna Cancelados hasta su resolución. El historial de Admin conserva
+todos los registros cancelados y su auditoría. No requiere migración adicional.
+
+## Interfaz operativa y rendimiento (actualización)
+
+- Cocina/Barra: número de pedido común, modalidad, antigüedad y productos destacados;
+  referencia UUID bajo detalle. Estado con texto y color, una acción principal y
+  cancelación secundaria. Pendientes conservan orden de recepción.
+- El tablero incluye tickets activos y cancelados de las últimas 24 horas. Los antiguos
+  permanecen en el historial. Finalizados listos siguen archivados.
+- Administración: tabla adaptable a tarjetas móviles, detalle expandible, filtros y
+  contadores en servidor. Historial de 20 pedidos por página, actualización cada 15 s.
+  Solicitudes y contadores se actualizan cada 5 s; solo se consulta la página visible.
+- GET /api/v1/staff/orders/?status=READY&page=2 filtra y pagina.
+- GET /api/v1/staff/orders/?pending_cancellation=true lista solicitudes sin resolver.
+- GET /api/v1/staff/orders/counts/ devuelve contadores globales y requests.
+- POST /api/v1/staff/orders/{id}/reject-cancellation/ exige superusuario y reason.
+  Registra fecha, responsable y motivo; desbloquea el pedido sin alterar su avance.
+  Una solicitud aprobada no puede rechazarse, y una rechazada no puede aprobarse.
+  Se puede solicitar una nueva revisión si surge otro problema.
+
+Aplicar `python manage.py migrate` por los campos de rechazo. Esta sección reemplaza
+la limitación anterior que indicaba que no había rechazo de solicitudes.
+
+Validación local: prueba de consultas SQL con una orden frente a veinte órdenes con
+tickets: cantidad constante y como máximo diez consultas, sin crecimiento por fila.
+No representa una medición de latencia real contra Supabase. La validación visual en
+dispositivos y la carga concurrente de PostgreSQL siguen siendo comprobaciones separadas.
+
 ## Tableros y controles actuales
 
 Cocina/Barra mantiene cuatro columnas. Un ticket con cancellation_pending=true

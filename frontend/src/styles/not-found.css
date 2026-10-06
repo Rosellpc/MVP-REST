@@ -85,17 +85,18 @@
   gap: 1rem;
   min-height: 48px;
   padding: 0.8rem 1.5rem;
-  border: 1px solid var(--text);
+  border: 1px solid var(--glass-border);
   border-radius: 999px;
-  background: var(--text);
-  color: var(--charcoal-deep);
+  background: var(--button-surface);
+  color: var(--text);
+  box-shadow: var(--button-shadow);
   font-size: 0.9rem;
   font-weight: 600;
   transition: background-color 160ms ease;
 }
 
 .not-found__button:hover {
-  background: #d7d7d9;
+  background: var(--button-hover);
 }
 
 .not-found__secondary {

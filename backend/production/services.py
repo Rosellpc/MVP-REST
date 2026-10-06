@@ -79,7 +79,7 @@ def finalize_ticket(ticket_id, actor):
     require_permission(actor, f"advance_{reference.station_code.lower()}_ticket")
     Order.objects.select_for_update().get(pk=reference.order_id)
     ticket = ProductionTicket.objects.select_for_update().get(pk=ticket_id)
-    if CancellationRequest.objects.filter(order_id=ticket.order_id, approved_at__isnull=True).exists():
+    if CancellationRequest.objects.filter(order_id=ticket.order_id, approved_at__isnull=True, rejected_at__isnull=True).exists():
         raise Conflict("El pedido tiene una solicitud de cancelación pendiente.")
     if ticket.status != "READY":
         raise Conflict("Solo puedes finalizar tickets listos.")
@@ -101,7 +101,7 @@ def transition_ticket(ticket_id, actor, target_status, reason=""):
     require_permission(actor, permission)
     order = Order.objects.select_for_update().get(pk=reference.order_id)
     ticket = ProductionTicket.objects.select_for_update().get(pk=ticket_id)
-    if CancellationRequest.objects.filter(order=order, approved_at__isnull=True).exists():
+    if CancellationRequest.objects.filter(order=order, approved_at__isnull=True, rejected_at__isnull=True).exists():
         raise Conflict("El pedido tiene una solicitud de cancelación pendiente.")
     reason = reason.strip()
     if target_status == "CANCELLED" and (not reason or len(reason) > 500):
@@ -133,10 +133,20 @@ def request_cancellation(ticket_id, actor, reason):
     if not reason or len(reason) > 500:
         raise ValidationError({"reason": "Indica un motivo de entre 1 y 500 caracteres."})
     existing = CancellationRequest.objects.filter(order=order).first()
-    if existing:
+    if existing and not existing.rejected_at:
         return existing
     if ticket.status not in ("PENDING", "IN_PROGRESS") or ticket.archived_at or order.production_status in ("READY", "CANCELLED"):
         raise Conflict("El pedido ya terminó y no admite solicitudes de cancelación.")
+    if existing:
+        existing.ticket = ticket
+        existing.requested_by = actor
+        existing.reason = reason
+        existing.created_at = timezone.now()
+        existing.rejected_at = None
+        existing.rejected_by = None
+        existing.rejection_reason = ""
+        existing.save()
+        return existing
     return CancellationRequest.objects.create(order=order, ticket=ticket, requested_by=actor, reason=reason)
 
 
@@ -157,6 +167,8 @@ def approve_cancellation(order_id, actor, reason=""):
         cancellation = CancellationRequest.objects.create(order=order, ticket=ticket, requested_by=actor, reason=reason)
     if cancellation.approved_at:
         return cancellation
+    if cancellation.rejected_at:
+        raise Conflict("La solicitud fue rechazada. Actualiza la lista.")
     now = timezone.now()
     for ticket in order.tickets.select_for_update().all():
         previous = ticket.status
@@ -170,4 +182,28 @@ def approve_cancellation(order_id, actor, reason=""):
     cancellation.save(update_fields=["approved_at", "approved_by"])
     order.production_status = "CANCELLED"
     order.save(update_fields=["production_status"])
+    return cancellation
+
+
+@transaction.atomic
+def reject_cancellation(order_id, actor, reason):
+    require_demo_enabled()
+    if not actor.is_authenticated or not actor.is_active or not actor.is_superuser:
+        raise PermissionDenied("Solo un superusuario puede rechazar la solicitud.")
+    order = get_object_or_404(Order.objects.select_for_update(), pk=order_id)
+    cancellation = get_object_or_404(CancellationRequest, order=order)
+    if cancellation.approved_at:
+        raise Conflict("La cancelación ya fue aprobada.")
+    if cancellation.rejected_at:
+        return cancellation
+    reason = reason.strip()
+    if not reason or len(reason) > 500:
+        raise ValidationError({"reason": "Indica el motivo del rechazo (máximo 500 caracteres)."})
+    cancellation.rejected_at = timezone.now()
+    cancellation.rejected_by = actor
+    cancellation.rejection_reason = reason
+    cancellation.save(update_fields=["rejected_at", "rejected_by", "rejection_reason"])
+    for ticket in order.tickets.all():
+        TicketEvent.objects.create(ticket=ticket, actor=actor, from_status=ticket.status,
+                                   to_status=ticket.status, reason=f"Rechazo: {reason}")
     return cancellation

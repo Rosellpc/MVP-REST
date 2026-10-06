@@ -6,8 +6,8 @@
 .admin-filter-row, .admin-management-row { padding: 1rem; border-radius: 1.25rem; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.22); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); box-shadow: 0 15px 35px rgba(0,0,0,.1), inset 0 0 15px rgba(255,255,255,.15); }
 .admin-filter-row { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: .75rem; }
 .admin-management-row { display: grid; grid-template-columns: minmax(180px, 1fr) 2fr; align-items: center; gap: 1rem; }
-.staff-shell .admin-controls button { border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: var(--text); box-shadow: inset 0 0 15px rgba(255,255,255,.1); border-radius: .85rem; }
-.staff-shell .admin-controls button[aria-pressed="true"] { background: rgba(255,255,255,.3); outline: 2px solid var(--text); outline-offset: 2px; }
+.staff-shell .admin-controls button { border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.12); color: var(--text); box-shadow: inset 0 0 15px rgba(255,255,255,.1); }
+.staff-shell .admin-controls button[aria-pressed="true"] { background: rgba(255,255,255,.3); outline-offset: 2px; }
 .admin-management-row p { margin: 0; font-size: .85rem; }
 .cancellation-badge { padding: .75rem; border: 1px solid var(--glass-border); border-radius: .75rem; background: rgba(255,255,255,.15); }
 @media (max-width: 760px) { .admin-filter-row { grid-template-columns: repeat(2, minmax(0, 1fr)); } .admin-management-row { grid-template-columns: 1fr; } }
@@ -15,7 +15,7 @@
 .admin-controls { display: grid; gap: 1rem; margin: 1.5rem 0; }
 .admin-filter-row, .admin-management-row { display: flex; flex-wrap: wrap; gap: .75rem; padding: 1rem; border: 1px solid var(--glass-border); border-radius: 1rem; background: var(--glass-surface); }
 .admin-management-row p { flex-basis: 100%; margin: .25rem 0 0; color: var(--text-muted); font-size: .85rem; }
-.admin-controls button[aria-pressed="true"] { background: #bce5ce;  }
+.admin-controls button[aria-pressed="true"] 
 .cancellation-badge { padding: .65rem; border: 1px solid #e2c58b; border-radius: .75rem; background: rgb(226 197 139 / 12%); }
 .direct-cancel-reason { display: grid; gap: .5rem; margin: 1rem 0; }
 .order-history-filter { display: flex; flex-wrap: wrap; align-items: center; gap: .75rem; }
