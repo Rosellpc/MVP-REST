@@ -654,3 +654,8 @@ Estas decisiones **no deben inventarse durante la implementación**; registrarla
 ---
 
 **Próximo entregable técnico:** completar el borrador [docs/domain-model.md](docs/domain-model.md) con las decisiones del piloto, conectar PostgreSQL e implementar el catálogo persistente. El dominio definitivo incluirá estados, unidades y reglas de inventario antes de crear pedidos y consumos.
+# Laboratorio independiente de costeo
+
+Primera etapa en `/costing`: insumos, rendimiento, formulación y cálculos guardados.
+[Alcance, activación y fórmulas](docs/costing.md). No modifica menú, pedidos ni inventario.
+

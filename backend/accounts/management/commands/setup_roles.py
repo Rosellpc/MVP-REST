@@ -17,6 +17,10 @@ class Command(BaseCommand):
             if len(permissions) != len(codes):
                 raise CommandError("Faltan permisos. Ejecuta migrate primero.")
             if name == "ADMIN":
+                costing_permission = Permission.objects.filter(content_type__app_label="costing", codename="use_costing").first()
+                if costing_permission is None:
+                    raise CommandError("Faltan permisos de costeo. Ejecuta migrate primero.")
+                permissions.append(costing_permission)
                 permissions += list(Permission.objects.filter(content_type__app_label="catalog"))
             production_codes = {
                 "ADMIN": {"release_order", "view_kitchen_ticket", "advance_kitchen_ticket", "view_bar_ticket", "advance_bar_ticket", "cancel_ticket", "view_productionticket", "view_productionticketitem", "view_ticketevent"},

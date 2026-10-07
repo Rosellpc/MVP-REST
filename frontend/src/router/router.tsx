@@ -4,6 +4,7 @@ import MainLayout from "../layouts/MainLayout";
 import StaffLayout from "../layouts/StaffLayout";
 import RequirePermission from "../features/auth/RequirePermission";
 import LoginPage from "../pages/LoginPage";
+import CostingPage from "../features/costing/CostingPage";
 import ProductionBoard from "../features/production/ProductionBoard";
 import { StaffHomePage } from "../pages/StaffPage";
 import ReleaseOrders from "../features/production/AdminOrderHistory";
@@ -16,6 +17,7 @@ import CheckoutPage from "../pages/CheckoutPage";
 import OrderConfirmationPage from "../pages/OrderConfirmationPage";
 
 const router = createBrowserRouter([
+    { path: "/costing", element: <CostingPage /> },
     {
         element: <MainLayout />,
         children: [
