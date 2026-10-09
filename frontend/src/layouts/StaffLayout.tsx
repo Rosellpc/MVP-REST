@@ -15,6 +15,7 @@ export default function StaffLayout() {
         {user?.permissions.includes("accounts.access_staff") && <NavLink to="/staff/admin">Admin</NavLink>}
         {user?.permissions.includes("accounts.access_kitchen") && <NavLink to="/kitchen">Cocina</NavLink>}
         {user?.permissions.includes("accounts.access_bar") && <NavLink to="/bar">Barra</NavLink>}
+        {user?.permissions.includes("stock.view_stock") && <NavLink to="/stock">Stock</NavLink>}
       </nav>
       <div className="staff-account">
         <span className="staff-account__avatar" aria-hidden="true">{user?.display_name.trim().slice(0, 1).toLocaleUpperCase() || "P"}</span>

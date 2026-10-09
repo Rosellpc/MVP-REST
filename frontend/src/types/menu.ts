@@ -10,6 +10,7 @@ export type Product = {
   description: string;
   image_url: string;
   sale_price: string;
+  stock_quantity?: number | null;
   category: Category;
 };
 

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "orders.apps.OrdersConfig",
     "production.apps.ProductionConfig",
     "costing",
+    "stock",
 ]
 
 AUTH_USER_MODEL = "accounts.User"

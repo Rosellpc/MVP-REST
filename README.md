@@ -1,5 +1,10 @@
 # RestaurantOS — Plataforma Full Stack de autoservicio y gestión de restaurante
 
+**Stock de productos terminados:** `/stock` incorpora turnos, producción,
+mermas, ajustes, conciliación e historial. Al abrir el primer turno, el checkout
+descuenta unidades y las cancelaciones aprobadas devuelven o registran merma según
+el estado de preparación. [Activación, roles y reglas](docs/stock.md).
+
 **Acceso del personal:** autenticación por sesión, CSRF, roles ADMIN/KITCHEN/BAR y
 rutas internas protegidas. [Activación, permisos y pruebas](docs/production-flow.md).
 **Producción de demostración:** API interna de tickets por estación, liberación manual

@@ -20,6 +20,7 @@ export default function CostingPage() {
     <div className="costing-main">
     <header className="costing-header"><div className="costing-breadcrumb"><span>Cuaderno de costos</span><span aria-hidden="true">/</span><strong>{user && allowed ? section[1] : "Acceso"}</strong></div>
       <div className="costing-header-actions"><span className="costing-currency">{section[0] === "inventory" ? "Moneda por conteo" : "PEN · S/"}</span>
+      {user?.permissions.includes("stock.view_stock") && <Link className="costing-currency" to="/stock">Stock</Link>}
       {user && <button disabled={busy} onClick={async () => { setBusy(true); try { await signOut(); } catch (e) { setError(message(e)); } finally { setBusy(false); } }}>Cerrar sesión</button>}
       </div>
     </header>

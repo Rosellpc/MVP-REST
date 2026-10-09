@@ -25,12 +25,18 @@ class Command(BaseCommand):
             production_codes = {
                 "ADMIN": {"release_order", "view_kitchen_ticket", "advance_kitchen_ticket", "view_bar_ticket", "advance_bar_ticket", "cancel_ticket", "view_productionticket", "view_productionticketitem", "view_ticketevent"},
                 "KITCHEN": {"view_kitchen_ticket", "advance_kitchen_ticket"},
+                "CHEF": {"view_kitchen_ticket", "advance_kitchen_ticket"},
                 "BAR": {"view_bar_ticket", "advance_bar_ticket"},
             }[name]
             production_permissions = list(Permission.objects.filter(content_type__app_label="production", codename__in=production_codes))
             if len(production_permissions) != len(production_codes):
                 raise CommandError("Faltan permisos de producción. Ejecuta migrate primero.")
             permissions += production_permissions
+            stock_codes = ["view_stock", "manage_stock"] if name in ("ADMIN", "CHEF") else ["view_stock"]
+            stock_permissions = list(Permission.objects.filter(content_type__app_label="stock", codename__in=stock_codes))
+            if len(stock_permissions) != len(stock_codes):
+                raise CommandError("Faltan permisos de stock. Ejecuta migrate primero.")
+            permissions += stock_permissions
             group, _ = Group.objects.get_or_create(name=name)
             group.permissions.set(permissions)
-        self.stdout.write(self.style.SUCCESS("Roles ADMIN, KITCHEN y BAR configurados."))
+        self.stdout.write(self.style.SUCCESS("Roles ADMIN, CHEF, KITCHEN y BAR configurados."))

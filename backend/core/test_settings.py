@@ -21,6 +21,7 @@ INSTALLED_APPS = [
     "orders.apps.OrdersConfig",
     "production.apps.ProductionConfig",
     "costing",
+    "stock",
 ]
 
 MIDDLEWARE = [

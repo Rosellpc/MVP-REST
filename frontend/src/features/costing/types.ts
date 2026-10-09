@@ -5,6 +5,8 @@ export type FormRecipe = {
   preparation_minutes: number | null; cooking_minutes: number | null; temperature: string;
   preparation: string; presentation: string; allergens: string; selling_price: string; tax_percent: string; lines: Line[];
 };
-export type Snapshot = FormRecipe & { total: string; per_portion: string; net_price: string; margin: string; food_cost_percent: string | null; import_source?: { file: string; sheet: string; original_total: string; notes: string[]; original_cooking_time?: string } };
+export type Snapshot = FormRecipe & { total: string | null; per_portion: string | null; net_price: string | null; margin: string | null; pending_costing?: boolean; source_product?: { id: number; sku: string; description: string; declared_ingredients: string; nutritional_information: string }; food_cost_percent: string | null; import_source?: { file: string; sheet: string; original_total: string; notes: string[]; original_cooking_time?: string } };
 export type Version = { id: number; recipe_id: number; number: number; snapshot: Snapshot; created_at: string; author: string };
 export const units = ["g", "kg", "ml", "l", "unit"];
+
+export const costMoney = (value: string | null) => value === null ? "Pendiente" : `S/ ${value}`;

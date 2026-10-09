@@ -1,6 +1,7 @@
 ROLE_PERMISSIONS = {
     "ADMIN": {"access_staff", "access_kitchen", "access_bar"},
     "KITCHEN": {"access_kitchen"},
+    "CHEF": {"access_kitchen"},
     "BAR": {"access_bar"},
 }
 

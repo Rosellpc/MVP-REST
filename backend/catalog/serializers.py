@@ -11,6 +11,7 @@ class MenuCategorySerializer(serializers.ModelSerializer):
 
 
 class MenuProductSerializer(serializers.ModelSerializer):
+    stock_quantity = serializers.IntegerField(read_only=True, allow_null=True)
     category = MenuCategorySerializer(read_only=True)
     sale_price = serializers.DecimalField(
         max_digits=10, decimal_places=2, coerce_to_string=True, read_only=True
@@ -18,7 +19,7 @@ class MenuProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ("id", "name", "description", "image_url","category", "sale_price")
+        fields = ("id", "name", "description", "image_url","category", "sale_price", "stock_quantity")
         read_only_fields = fields
 
 

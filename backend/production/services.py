@@ -43,6 +43,8 @@ def _release_order(order_id, actor):
         raise Conflict("El pedido no contiene productos.")
     if any(line.station_code not in ("KITCHEN", "BAR") for line in lines):
         raise Conflict("El pedido contiene una estación no soportada (por ejemplo DELIVERY). No se ha liberado ningún producto.")
+    from stock.services import consume_order
+    consume_order(order, lines, actor)
     tickets = []
     for station in sorted({line.station_code for line in lines}):
         ticket = ProductionTicket.objects.create(order=order, station_code=station)
@@ -169,6 +171,8 @@ def approve_cancellation(order_id, actor, reason=""):
         return cancellation
     if cancellation.rejected_at:
         raise Conflict("La solicitud fue rechazada. Actualiza la lista.")
+    from stock.services import cancel_stock
+    cancel_stock(order, actor)
     now = timezone.now()
     for ticket in order.tickets.select_for_update().all():
         previous = ticket.status

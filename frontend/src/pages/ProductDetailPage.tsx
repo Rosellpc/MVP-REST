@@ -13,13 +13,14 @@ export default function ProductDetailPage() {
   const { items, addItem } = useCart();
   const [feedback, setFeedback] = useState({ productId: "", message: "" });
   const quantity = items.find((item) => item.productId === product?.id)?.quantity ?? 0;
+  const limit = Math.min(MAX_QUANTITY, product?.stock_quantity ?? MAX_QUANTITY);
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
   }, [productId]);
 
   function handleAdd() {
-    if (!product || quantity >= MAX_QUANTITY) return;
+    if (!product || quantity >= limit) return;
     try {
       addItem(product);
       setFeedback({ productId, message: `${product.name} añadido. ${quantity + 1} en tu carrito.` });
@@ -51,8 +52,9 @@ export default function ProductDetailPage() {
                 <p className="product-description">{product.description.trim() || "La descripción de este producto aún no está disponible."}</p>
                 <p className="product-detail-price">S/ {Number(product.sale_price).toFixed(2)}</p>
                 <p className="cart-muted">Precio en soles. Impuestos incluidos.</p>
-                <button className="cart-button" type="button" disabled={quantity >= MAX_QUANTITY} onClick={handleAdd}>
-                  {quantity >= MAX_QUANTITY ? "Límite alcanzado" : "Añadir al carrito"}
+                {product.stock_quantity != null && <p className="cart-muted">{product.stock_quantity} unidades disponibles. Se validan al confirmar.</p>}
+                <button className="cart-button" type="button" disabled={quantity >= limit} onClick={handleAdd}>
+                  {limit === 0 ? "No disponible en este turno" : quantity >= limit ? "Límite disponible alcanzado" : "Añadir al carrito"}
                 </button>
                 <p role="status" className="product-feedback">{feedback.productId === productId ? feedback.message : ""}</p>
                 <Link className="cart-back-link" to="/cart">Ver carrito{quantity > 0 ? ` · ${quantity} de este producto` : ""}</Link>

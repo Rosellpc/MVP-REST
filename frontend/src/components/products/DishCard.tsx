@@ -16,6 +16,7 @@ export default function DishCard({ product }: { product: Product }) {
         <h3>{product.name}</h3>
         <p>{product.category.name || "Sin categoría"}</p>
         <strong>S/ {Number(product.sale_price).toFixed(2)}</strong>
+        {product.stock_quantity === 0 && <p>Agotado / no disponible en este turno</p>}
         <span className="product-card-cta">Ver producto <span aria-hidden="true">↗</span></span>
       </div>
       </Link>

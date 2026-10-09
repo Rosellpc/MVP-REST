@@ -21,7 +21,8 @@ def build_quote(items, *, lock=False):
         published=True, available=True, category__active=True, station__active=True,
     ).select_related("category", "station").order_by("pk")
     if lock:
-        products = products.select_for_update()
+        # Preserve price consistency without blocking stock ledger foreign-key inserts.
+        products = products.select_for_update(of=("self",), no_key=True)
     catalog = {product.pk: product for product in products}
     missing = [item["product_id"] for item in items if item["product_id"] not in catalog]
     if missing:

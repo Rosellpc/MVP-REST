@@ -44,6 +44,7 @@ class MenuAPITests(APITestCase):
                 "image_url": "",
                 "category": {"id": self.category.pk, "name": "Platos"},
                 "sale_price": "25.50",
+                "stock_quantity": None,
             }],
         })
 
