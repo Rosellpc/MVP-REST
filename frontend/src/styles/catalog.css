@@ -49,17 +49,22 @@
 .product-card-link { display: block; height: 100%; }
 .product-card-link:focus-visible { outline-offset: -4px; border-radius: 1.5rem; }
 .property-card-content h3 { margin: 0 0 .4rem; font-size: 1.1rem; font-weight: 500; line-height: 1.5; }
+.property-card-content strong {color: rgb(103, 187, 159);}
 .product-card-cta { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; padding-top: .8rem; border-top: 1px solid var(--glass-border); color: var(--text-muted); font-size: .85rem; }
-.catalog-back { display: inline-block; margin-bottom: 1.5rem; padding-block: .5rem; text-decoration: underline; color: var(--text-muted); }
+.catalog-back { display: inline-block;  margin-bottom: 1.5rem; padding-block: .5rem; text-decoration: underline; color: rgb(103, 187, 159); }
 .product-overview { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 1.5rem; }
 .product-detail-image { width: 100%; height: 100%; min-height: 360px; max-height: 560px; object-fit: cover; border-radius: 1.5rem; }
 .product-purchase h1 { margin: .5rem 0 1rem; font-weight: 400; font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.2; overflow-wrap: anywhere; }
 .product-description { color: var(--text-muted); white-space: pre-line; }
-.product-detail-price { font-size: 1.8rem; margin: 1rem 0 0; font-variant-numeric: tabular-nums; }
+.product-detail-price { font-size: 1.8rem; margin: 1rem 0 0; font-variant-numeric: tabular-nums; color: rgb(103, 187, 159);}
 .product-purchase > .cart-button { width: 100%; margin-top: 1rem; }
 .product-feedback { min-height: 1.6em; font-size: .85rem; }
 .product-information { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1.5rem; margin-top: 1.5rem; }
 .product-information p { margin-bottom: 0; white-space: pre-line; color: var(--text-muted); overflow-wrap: anywhere; }
+.product-allergen-list { display: flex; flex-wrap: wrap; gap: .65rem; padding: 0; margin: 1rem 0 0; list-style: none; }
+.product-allergen-list li { display: inline-flex; align-items: center; gap: .5rem; max-width: 100%; padding: .55rem .8rem; border: 1px solid var(--glass-border); border-radius: .85rem; background: rgb(255 255 255 / 8%); color: var(--text); box-shadow: inset 0 1px 0 rgb(255 255 255 / 8%); }
+.product-allergen-list span { overflow-wrap: anywhere; min-width: 0; }
+.product-allergen-check { width: 1.15rem; height: 1.15rem; flex-shrink: 0; color: aquamarine; }
 @media (max-width: 760px) {
   .catalog-layout, .product-overview, .product-information { grid-template-columns: minmax(0, 1fr); }
   .category-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }

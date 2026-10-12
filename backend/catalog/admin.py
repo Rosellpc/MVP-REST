@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from .models import Category, Product, Station
+from .forms import ProductAdminForm
 
 
 @admin.register(Category)
@@ -32,6 +33,7 @@ class StationAdmin(admin.ModelAdmin):
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
+    form = ProductAdminForm
     list_display = (
         "sku",
         "name",
@@ -71,7 +73,7 @@ class ProductAdmin(admin.ModelAdmin):
         (
             "Ingredientes e información alimentaria",
             {
-                "fields": ("ingredients", "nutritional_information", "allergens"),
+                "fields": ("ingredients", "nutritional_information", "selected_allergens", "allergens"),
             },
         ),
         (

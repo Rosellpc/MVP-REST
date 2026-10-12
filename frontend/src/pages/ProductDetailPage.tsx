@@ -4,6 +4,11 @@ import { useProductDetail } from "../features/catalog/hooks/useProductDetail";
 import { useCart } from "../features/cart/CartContext";
 import { MAX_QUANTITY } from "../features/cart/cartState";
 
+const ALLERGEN_NAMES = new Set([
+  "Gluten", "Crustáceos", "Huevo", "Pescado", "Cacahuetes", "Soja", "Lácteos",
+  "Frutos secos", "Apio", "Mostaza", "Sulfitos", "Sésamo", "Moluscos", "Altramuz",
+]);
+
 export default function ProductDetailPage() {
   const { productId = "" } = useParams();
   const [searchParams] = useSearchParams();
@@ -14,6 +19,9 @@ export default function ProductDetailPage() {
   const [feedback, setFeedback] = useState({ productId: "", message: "" });
   const quantity = items.find((item) => item.productId === product?.id)?.quantity ?? 0;
   const limit = Math.min(MAX_QUANTITY, product?.stock_quantity ?? MAX_QUANTITY);
+  const allergenLines = (product?.allergens ?? "").split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+  const declaredAllergens = [...new Set(allergenLines.filter(line => ALLERGEN_NAMES.has(line)))];
+  const allergenNotes = allergenLines.filter(line => !ALLERGEN_NAMES.has(line)).join("\n");
 
   useEffect(() => {
     window.scrollTo({ top: 0, left: 0 });
@@ -71,7 +79,19 @@ export default function ProductDetailPage() {
               </section>
               <section className="cart-panel" aria-labelledby="allergens-title">
                 <h2 id="allergens-title">Alérgenos</h2>
-                <p>{product.allergens.trim() || "Información de alérgenos no disponible. Consulta al personal antes de pedir si tienes alguna alergia."}</p>
+                {declaredAllergens.length > 0 && <>
+                  <p>Contiene:</p>
+                  <ul className="product-allergen-list" role="list">
+                    {declaredAllergens.map(allergen => <li key={allergen}>
+                      <svg className="product-allergen-check" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+                        <path d="m5 12 4 4L19 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      <span>{allergen}</span>
+                    </li>)}
+                  </ul>
+                </>}
+                {allergenNotes && <p>{allergenNotes}</p>}
+                {allergenLines.length === 0 && <p>Información de alérgenos no disponible. Consulta al personal antes de pedir si tienes alguna alergia.</p>}
               </section>
             </div>
           </>
