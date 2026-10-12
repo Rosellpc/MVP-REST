@@ -6,11 +6,11 @@
 - Consumo en mesa o recojo para llevar.
 - PEN y precios finales con impuestos incluidos: no se añade un impuesto extra.
 - Pedido persistido en Django con `DEMO_CONFIRMED` y pago `SIMULATED`.
-- No se cobra dinero, no se capturan tarjetas, no se envían tickets a cocina y no se descuenta inventario.
+- No se cobra dinero ni se capturan tarjetas. Con producción demo habilitada, el checkout crea tickets por área y descuenta stock operativo cuando su control está activado.
 
 Esto completa el recorrido **del cliente en modo demostración**. Un restaurante
-operando con pedidos reales todavía necesita el flujo de cobro, producción y stock
-descrito en el README. Los pedidos demo deben quedar fuera de métricas de ventas reales.
+operando con pedidos reales todavía necesita cobro, conciliación y confirmación de
+entrega física. Los pedidos demo deben quedar fuera de métricas de ventas reales.
 
 ## 1. Archivos del frontend
 
@@ -19,7 +19,7 @@ descrito en el README. Los pedidos demo deben quedar fuera de métricas de venta
 | `src/features/cart/cartState.ts` | Tipos, cantidades entre 1 y 99, subtotal en centavos y recuperación de carrito. |
 | `src/features/cart/CartContext.ts` | Contrato compartido y hook `useCart`. |
 | `src/features/cart/CartProvider.tsx` | Estado global del carrito y persistencia en `sessionStorage`. |
-| `src/components/products/DishCard.tsx` | Recibe el producto completo y permite agregarlo. |
+| `src/components/products/DishCard.tsx` | Abre el detalle del producto, donde se agrega al carrito. |
 | `src/components/products/DishesSection.tsx` | Entrega cada producto a su tarjeta. |
 | `src/components/layout/Header.tsx` | Enlace al carrito con contador de unidades. |
 | `src/pages/CartPage.tsx` | Cantidades, eliminación, vaciado, subtotal y acceso al checkout. |
@@ -30,7 +30,7 @@ descrito en el README. Los pedidos demo deben quedar fuera de métricas de venta
 | `src/pages/OrderConfirmationPage.tsx` | Confirmación persistida consultada por código público. |
 | `src/styles/checkout.css` | Diseño carbón y vidrio, con adaptación a móvil. |
 | `src/main.tsx` | Monta `CartProvider` y carga la nueva hoja de estilos. |
-| `src/App.tsx` | Registra carrito, checkout y confirmación. |
+| `src/router/router.tsx` | Registra carrito, checkout y confirmación. |
 | `tests/cart.test.mjs` | Pruebas del estado del carrito y almacenamiento dañado. |
 
 El carrito sobrevive a recargas en la misma pestaña. Si el navegador bloquea el
@@ -62,10 +62,10 @@ Se registra la aplicación en `core/settings.py`, `core/test_settings.py` y sus 
 en `core/urls.py`. La prueba de paginación de catálogo ahora utiliza el tamaño
 configurado (100), en lugar de asumir el valor antiguo de 20.
 
-## 3. Activación local: pasos pendientes en tu base configurada
+## 3. Activación en una instalación nueva
 
-Los archivos ya están implementados. **La migración no se ha aplicado a Supabase**:
-la validación automatizada utiliza SQLite aislado y una base temporal de navegador.
+La base de desarrollo ya contiene pedidos. En una instalación nueva, aplica las
+migraciones a la base configurada; las pruebas automatizadas usan SQLite aislado.
 
 En Git Bash:
 
@@ -78,12 +78,13 @@ python manage.py migrate
 ```
 
 `migrate` actúa sobre la base definida en tu `backend/.env`; comprueba el entorno
-de destino antes de ejecutarlo. Es una migración aditiva de pedidos y sus líneas.
+de destino antes de ejecutarlo. Consulta primero el plan de migraciones completo.
 
-En `backend/.env`, agrega o ajusta **solo** esta variable:
+En `backend/.env`, habilita el circuito de demostración:
 
 ```dotenv
 ORDER_DEMO_ENABLED=True
+PRODUCTION_DEMO_ENABLED=True
 ```
 
 Sin esa variable, el valor predeterminado coincide con `DEBUG`. Si la demostración
@@ -142,7 +143,7 @@ y resumen. Para recoger, usa `PICKUP`; no se requiere mesa.
 - 200: mismo intento ya registrado; devuelve el mismo pedido.
 - 400: datos inválidos o productos no disponibles.
 - 403: modo demo deshabilitado.
-- 409: cambió el precio o se reutilizó una clave con otro contenido.
+- 409: cambió el precio, falta stock, no hay turno abierto con control activo o se reutilizó una clave con otro contenido.
 - 429: demasiadas solicitudes; conserva la clave para reintentar.
 
 ### GET `/api/v1/orders/<publicCode>/`

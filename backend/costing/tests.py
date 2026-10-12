@@ -6,6 +6,22 @@ from .models import Ingredient, CostStudy
 
 
 class CostingTests(TestCase):
+    def test_recipe_edit_keeps_stored_provenance_and_rejects_spoofed_source(self):
+        from .models import Recipe, RecipeVersion
+        recipe = Recipe.objects.create(name="Draft", current_version=1)
+        origin = {"id": 71, "sku": "BAR-71"}
+        original = {"name": "Draft", "pending_costing": True, "per_portion": None, "source_product": origin}
+        RecipeVersion.objects.create(recipe=recipe, number=1, snapshot=original)
+        response = self.client.post(f"/api/v1/costing/recipes/{recipe.pk}/", {
+            **self.recipe, "expected_version": 1, "source_product": {"id": 999},
+            "preparation_minutes": None, "cooking_minutes": None,
+        }, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["snapshot"]["source_product"], origin)
+        self.assertFalse(response.data["snapshot"].get("pending_costing", False))
+        self.assertIsNone(response.data["snapshot"]["cooking_minutes"])
+        self.assertEqual(recipe.versions.get(number=1).snapshot, original)
+
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="cost-admin", password="test-password")
         self.user.user_permissions.add(Permission.objects.get(content_type__app_label="costing", codename="use_costing"))

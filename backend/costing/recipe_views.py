@@ -131,6 +131,11 @@ class RecipeDetailView(CostingView):
         if serializer.validated_data.get("expected_version") != recipe.current_version:
             return Response({"detail": "La receta cambió. Vuelve a abrir su última versión antes de guardar."}, status=409)
         snapshot = recipe_snapshot(serializer.validated_data)
+        previous = recipe.versions.get(number=recipe.current_version).snapshot
+        # Preserve trusted provenance from storage, never accept a client-supplied link.
+        for key in ("source_product", "import_source"):
+            if key in previous:
+                snapshot[key] = previous[key]
         recipe.current_version += 1
         recipe.name = snapshot["name"]
         recipe.save(update_fields=["current_version", "name"])

@@ -22,6 +22,18 @@ def workbook():
 
 
 class ImportTests(TestCase):
+    def test_large_valid_inventory_values_keep_decimal_precision(self):
+        from decimal import Decimal, localcontext
+        from .models import InventoryCountLine
+        count = InventoryCount.objects.create(establishment="Test", department="Test", employee="Test")
+        value = Decimal("999999999999.9999")
+        # SQLite stores numeric values as floats; isolate arithmetic from that limitation.
+        count._prefetched_objects_cache = {"lines": [InventoryCountLine(pk=i + 1, inventory=count, product=f"Item {i}", quantity=value, unit_cost=value) for i in range(1000)]}
+        with localcontext() as context:
+            context.prec = 50
+            expected = str((value * value * 1000).quantize(Decimal("0.01")))
+        self.assertEqual(count_payload(count)["total"], expected)
+
     def setUp(self):
         self.user = get_user_model().objects.create_user(username="importer")
         self.user.user_permissions.add(Permission.objects.get(content_type__app_label="costing", codename="use_costing"))

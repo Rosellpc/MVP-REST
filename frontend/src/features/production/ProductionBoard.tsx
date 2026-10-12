@@ -3,6 +3,7 @@ import { useAuth } from "../auth/useAuth";
 import { AuthError } from "../auth/authApi";
 import { fetchTickets, updateTicket, type Ticket } from "./productionApi";
 import { usePolling } from "./usePolling";
+import CancellationNotices from "./CancellationNotices";
 import "../../styles/production.css";
 import "../../styles/staff-operations.css";
 
@@ -60,6 +61,7 @@ export default function ProductionBoard({ station }: { station: "KITCHEN" | "BAR
     <p className="demo-notice">Producción de demostración. No representa preparaciones reales.</p>
     <div className="production-toolbar"><p role="status">{loading ? "Cargando tickets…" : refreshing ? "Actualizando…" : error ? "Error de conexión · Datos sin actualizar" : `Última actualización: ${updatedAt?.toLocaleTimeString() ?? "sin datos"}`}</p><button disabled={refreshing} onClick={refresh}>Actualizar</button></div>
     {error && <p role="alert">{error} Los datos visibles pueden estar desactualizados.</p>}
+    <CancellationNotices key={station} station={station} />
     {!loading && data?.length === 0 && <p>No hay tickets para esta estación.</p>}
     <div className="production-columns">{Object.entries(columns).map(([status, label]) => {
       const tickets = data?.filter(ticket => (ticket.cancellation_pending ? "CANCELLED" : ticket.status) === status) ?? [];

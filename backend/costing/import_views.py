@@ -29,7 +29,7 @@ class RecipeImportView(CostingView):
         rows = request.data.get("recipes") if isinstance(request.data, dict) else None
         if not isinstance(rows, list) or not 1 <= len(rows) <= 100:
             raise ValidationError({"detail": "Envía entre 1 y 100 recetas en recipes."})
-        by_name = {item.name.casefold(): item.pk for item in Ingredient.objects.all()}
+        by_name = {item.name.casefold(): item.pk for item in Ingredient.objects.filter(archived=False)}
         names = {name.casefold() for name in Recipe.objects.values_list("name", flat=True)}
         snapshots = []
         for index, row in enumerate(rows):

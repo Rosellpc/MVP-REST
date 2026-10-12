@@ -14,6 +14,18 @@ from .models import StockControl, Shift, Movement, Balance
 
 
 class StockTests(TestCase):
+    def test_quote_checks_stock_and_closed_shift_without_reserving_units(self):
+        self.open(1)
+        payload = {"items": [{"product_id": self.food.pk, "quantity": 2}]}
+        response = self.client.post("/api/v1/orders/preview/", payload, format="json")
+        self.assertEqual(response.status_code, 409)
+        payload["items"][0]["quantity"] = 1
+        self.assertEqual(self.client.post("/api/v1/orders/preview/", payload, format="json").status_code, 200)
+        self.assertEqual(Balance.objects.get(product=self.food).quantity, 1)
+        self.assertFalse(Movement.objects.filter(kind="SALE").exists())
+        self.assertEqual(self.post("close", self.close_payload()).status_code, 200)
+        self.assertEqual(self.client.post("/api/v1/orders/preview/", payload, format="json").status_code, 409)
+
     def setUp(self):
         cache.clear()
         call_command("setup_roles", verbosity=0)

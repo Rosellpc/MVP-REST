@@ -5,13 +5,14 @@ from .models import ProductionTicket, ProductionTicketItem, CancellationRequest
 
 
 class CancellationSerializer(serializers.ModelSerializer):
+    order_number = serializers.IntegerField(source="order_id", read_only=True)
     public_code = serializers.UUIDField(source="order.public_code", read_only=True)
     station = serializers.CharField(source="ticket.station_code", read_only=True)
     requested_by = serializers.CharField(source="requested_by.username", read_only=True)
 
     class Meta:
         model = CancellationRequest
-        fields = ["id", "public_code", "station", "requested_by", "reason", "created_at", "approved_at", "rejected_at", "rejection_reason"]
+        fields = ["id", "order_number", "public_code", "station", "requested_by", "reason", "created_at", "approved_at", "rejected_at", "rejection_reason"]
 
 
 class TicketItemSerializer(serializers.ModelSerializer):

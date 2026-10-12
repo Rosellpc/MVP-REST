@@ -23,6 +23,9 @@ def build_quote(items, *, lock=False):
     if lock:
         # Preserve price consistency without blocking stock ledger foreign-key inserts.
         products = products.select_for_update(of=("self",), no_key=True)
+    else:
+        from stock.availability import with_stock_availability
+        products = with_stock_availability(products)
     catalog = {product.pk: product for product in products}
     missing = [item["product_id"] for item in items if item["product_id"] not in catalog]
     if missing:
@@ -33,6 +36,10 @@ def build_quote(items, *, lock=False):
     lines = []
     for item in items:
         product = catalog[item["product_id"]]
+        if product.station.code not in ("KITCHEN", "BAR"):
+            raise ValidationError({"detail": "Hay productos sin estación de cocina o barra. Retíralos del carrito o consulta al personal."})
+        if not lock and product.stock_quantity is not None and item["quantity"] > product.stock_quantity:
+            raise OrderConflict(f"{product.name}: solo hay {product.stock_quantity} unidades disponibles en este turno. Actualiza el carrito.")
         line_total = product.sale_price * item["quantity"]
         total += line_total
         lines.append({"product_id": product.pk, "name": product.name,
@@ -67,8 +74,6 @@ def create_demo_order(data, idempotency_key):
                 table_label=data["table_label"],
             )
             lines, total = build_quote(data["items"], lock=True)
-            if any(line["station_code"] not in ("KITCHEN", "BAR") for line in lines):
-                raise ValidationError({"detail": "Hay productos sin estación de cocina o barra. Retíralos del carrito o consulta al personal."})
             if total != data["expected_total"]:
                 raise OrderConflict("Los precios cambiaron. Actualiza el resumen y confirma el nuevo total.")
             OrderItem.objects.bulk_create([OrderItem(order=order, **line) for line in lines])

@@ -1,192 +1,72 @@
-# Tickets de demostración: activación y API
+﻿# API de producción y cancelaciones
 
-Actualización de limpieza de tableros: las cancelaciones aprobadas ya no aparecen
-en Cocina/Barra, ni siquiera durante 24 horas. Las solicitudes pendientes siguen
-visibles en la columna Cancelados hasta su resolución. El historial de Admin conserva
-todos los registros cancelados y su auditoría. No requiere migración adicional.
+Todos los endpoints están bajo `/api/v1/`, requieren sesión y aplican permisos
+de estación. Las mutaciones requieren CSRF y producción demo habilitada.
 
-## Interfaz operativa y rendimiento (actualización)
+## Flujo actual
 
-- Cocina/Barra: número de pedido común, modalidad, antigüedad y productos destacados;
-  referencia UUID bajo detalle. Estado con texto y color, una acción principal y
-  cancelación secundaria. Pendientes conservan orden de recepción.
-- El tablero incluye tickets activos y cancelados de las últimas 24 horas. Los antiguos
-  permanecen en el historial. Finalizados listos siguen archivados.
-- Administración: tabla adaptable a tarjetas móviles, detalle expandible, filtros y
-  contadores en servidor. Historial de 20 pedidos por página, actualización cada 15 s.
-  Solicitudes y contadores se actualizan cada 5 s; solo se consulta la página visible.
-- GET /api/v1/staff/orders/?status=READY&page=2 filtra y pagina.
-- GET /api/v1/staff/orders/?pending_cancellation=true lista solicitudes sin resolver.
-- GET /api/v1/staff/orders/counts/ devuelve contadores globales y requests.
-- POST /api/v1/staff/orders/{id}/reject-cancellation/ exige superusuario y reason.
-  Registra fecha, responsable y motivo; desbloquea el pedido sin alterar su avance.
-  Una solicitud aprobada no puede rechazarse, y una rechazada no puede aprobarse.
-  Se puede solicitar una nueva revisión si surge otro problema.
+El checkout crea el pedido y sus tickets de Cocina/Barra de forma transaccional.
+La liberación manual permanece como API administrativa para pedidos demo previos;
+no es un paso del checkout habitual. Repetir la liberación no duplica tickets.
 
-Aplicar `python manage.py migrate` por los campos de rechazo. Esta sección reemplaza
-la limitación anterior que indicaba que no había rechazo de solicitudes.
+Los tickets avanzan PENDING → IN_PROGRESS → READY. Finalizar archiva el ticket
+listo y lo retira del tablero; no acredita pago ni entrega física. El pedido está
+listo cuando todas sus áreas requeridas están listas.
 
-Validación local: prueba de consultas SQL con una orden frente a veinte órdenes con
-tickets: cantidad constante y como máximo diez consultas, sin crecimiento por fila.
-No representa una medición de latencia real contra Supabase. La validación visual en
-dispositivos y la carga concurrente de PostgreSQL siguen siendo comprobaciones separadas.
+Cocina/Barra pueden solicitar cancelación solo desde PENDING o IN_PROGRESS, con
+motivo obligatorio. La tarjeta pasa visualmente a Cancelados con etiqueta
+«Pendiente de cancelación»; el estado técnico se conserva hasta la decisión.
+La solicitud afecta al pedido completo y bloquea su avance mientras se resuelve.
+Solo un superusuario puede aprobar o rechazar. Aprobar cancela todos sus tickets,
+los retira de los tableros y conserva el historial. Rechazar permite continuar.
+No se ofrece cancelación parcial; PARTIALLY_CANCELLED queda como compatibilidad
+histórica y no como filtro o acción nueva.
 
-## Tableros y controles actuales
+Stock devuelve unidades de tickets que aún no iniciaron preparación; para los que
+ya iniciaron registra pérdida sin devolución. Consultar [reglas de stock](stock.md).
 
-Cocina/Barra mantiene cuatro columnas. Un ticket con cancellation_pending=true
-se muestra en Cancelados con la etiqueta Pendiente de cancelación; el estado de
-preparación persistido no se cancela hasta la aprobación. La solicitud pausa todo
-el pedido y solo puede originarse desde Pendientes o En preparación.
+## Endpoints
 
-Admin dispone de dos filas: filtros por estado y gestión de cancelaciones.
-Ítems por cancelar muestra las solicitudes; Cancelar órdenes permite al superusuario
-cancelar directamente un pedido PENDING/IN_PROGRESS con motivo obligatorio, enviando
-POST /api/v1/staff/orders/{id}/cancel/ con {"reason": "motivo"}. Sin solicitud previa,
-se crea y aprueba una solicitud auditada dentro de la misma transacción. No se ofrece
-el filtro Cancelado parcialmente. La unidad de cancelación continúa siendo el pedido
-completo, no una línea individual. No requiere migraciones adicionales.
+| Método y ruta | Función |
+| --- | --- |
+| GET `staff/orders/` | Historial demo paginado, 20 por página |
+| GET `staff/orders/counts/` | Contadores por estado y solicitudes pendientes |
+| POST `staff/orders/{id}/release/` | Liberación administrativa idempotente |
+| POST `staff/orders/{id}/cancel/` | Aprobación exclusiva de superusuario |
+| POST `staff/orders/{id}/reject-cancellation/` | Rechazo exclusivo de superusuario con motivo |
+| GET `production/tickets/` | Tickets visibles de las estaciones autorizadas, 50 por página |
+| GET `production/tickets/{id}/` | Detalle autorizado, incluido historial archivado |
+| POST `production/tickets/{id}/start/` | Iniciar preparación |
+| POST `production/tickets/{id}/complete/` | Marcar listo |
+| POST `production/tickets/{id}/finalize/` | Archivar ticket listo |
+| POST `production/tickets/{id}/cancel/` | Crear solicitud, no aprobarla |
+| GET `production/cancellation-notices/` | Avisos de cancelaciones aprobadas |
 
-## Cancelación con aprobación del superusuario
+El historial acepta `status=PENDING|IN_PROGRESS|READY|CANCELLED` y
+`pending_cancellation=true`. Los tickets aceptan `station=KITCHEN|BAR` y `status`;
+la lista siempre excluye archivados y cancelaciones aprobadas. Seguir `next` para
+obtener páginas adicionales; un filtro nunca amplía permisos de estación.
 
-El flujo vigente reemplaza la cancelación directa descrita en las secciones anteriores:
-POST /production/tickets/{id}/cancel/ ahora solicita cancelar el pedido completo,
-con motivo obligatorio. Cocina y Barra solo pueden solicitar desde su estación.
-La solicitud es persistente y única por pedido; mientras está pendiente se bloquean
-avances y finalización de sus tickets. Administración la muestra con prioridad.
+Los POST de solicitud/rechazo usan `{"reason":"Motivo"}`. La API permite también
+cancelación directa de superusuario con motivo cuando el pedido es elegible,
+aunque el panel se centra en resolver solicitudes. Las respuestas de cancelación
+son objetos CancellationRequest, no tickets. Un conflicto de estado devuelve 409;
+los permisos insuficientes devuelven 403.
 
-POST /staff/orders/{id}/cancel/ aprueba la solicitud únicamente si el usuario activo
-es superusuario (is_superuser). El grupo ADMIN por sí solo no basta. Se cancelan y
-archivan todos los tickets en una transacción, con usuario y motivo en auditoría.
-El cliente ve CANCELLED y no recibe el agradecimiento de pedido listo.
+Los avisos aceptan `station` y `approved_since` (fecha ISO con zona horaria).
+Incluyen `order_number`. El tablero consulta cada 10 segundos desde cinco minutos
+antes de su apertura y permite descartarlos durante la visita. No vuelve a
+mostrar tarjetas de trabajo canceladas ni presenta todo el historial como nuevo.
 
-GET /production/cancellation-notices/?station=KITCHEN (o BAR) devuelve avisos
-paginados de aprobaciones de pedidos que correspondan a la estación autorizada.
-Los tableros consultan cada cinco segundos y muestran «Cancelación aprobada por el
-administrador». Entendido oculta el aviso durante la visita actual.
+El cliente consulta el seguimiento mediante su código público de pedido. Los
+eventos y solicitudes se conservan para auditoría; no se borran al limpiar tableros.
 
-Se retiraron la opción Pendiente de aceptación y la liberación manual de la pantalla
-administrativa. Aplicar `python manage.py migrate` para crear CancellationRequest.
-Esta versión no incorpora rechazo de solicitudes: una solicitud pendiente permanece
-pausada hasta su aprobación. No se cancelan pedidos completamente listos mediante
-solicitudes nuevas.
-
-## Finalizar tickets listos
-
-El botón «Finalizado» en Cocina y Barra llama a
-POST /api/v1/production/tickets/{id}/finalize/. Solo admite tickets READY de una
-estación que el usuario pueda operar. Archiva el ticket con fecha y evento de auditoría;
-el listado deja de mostrarlo también al recargar. No elimina registros ni cambia el
-estado READY del pedido del cliente. Repetir la petición no duplica eventos.
-Aplicar `python manage.py migrate` para crear archived_at.
-
-## Checkout automático
-
-Confirmar el checkout ahora crea el pedido y sus tickets en una única transacción.
-Abrir /checkout o visitar el carrito no crea tickets. Cada producto se enruta según
-su estación guardada. Los reintentos con la misma clave no duplican pedidos ni tickets.
-La auditoría distingue CHECKOUT (actor nulo) de acciones STAFF del personal.
-El cliente ve una línea verde: Recibido → En preparación → Listo. El último estado
-requiere que todas las estaciones terminen. Cancelaciones se muestran como interrupciones.
-
-Aplicar la nueva migración con `python manage.py migrate` antes de probar.
-PRODUCTION_DEMO_ENABLED hereda ORDER_DEMO_ENABLED (o DEBUG) si no se especifica.
-Si se configura explícitamente False, un checkout nuevo se rechaza sin crear pedido.
-Configúralo en True para probar este flujo. DELIVERY continúa rechazado hasta definir
-su tratamiento. La liberación manual queda disponible para pedidos antiguos pendientes.
-
-## Activar
-
-Con el entorno virtual de backend activo:
+## Verificación
 
 ```sh
-python manage.py migrate
-python manage.py setup_roles
+python manage.py test production orders stock accounts --settings=core.test_settings
 ```
 
-Configura en el entorno del backend `PRODUCTION_DEMO_ENABLED=True` y reinicia Django
-solo cuando quieras probar producción simulada. El checkout también necesita ORDER_DEMO_ENABLED.
-Desactivar producción bloquea todas sus mutaciones; los usuarios autorizados aún
-pueden consultar los registros para auditoría. No se ejecutaron migraciones remotas.
-
-## Contrato
-
-Todas las rutas requieren sesión. POST requiere X-CSRFToken. Primero obtén un token
-en GET /api/v1/auth/csrf/ e inicia sesión. No uses cuentas compartidas.
-
-| Método | Ruta | Permiso |
-| --- | --- | --- |
-| GET | /api/v1/staff/orders/ | production.release_order |
-| POST | /api/v1/staff/orders/{id}/release/ | production.release_order |
-| GET | /api/v1/production/tickets/ | view_kitchen_ticket o view_bar_ticket |
-| GET | /api/v1/production/tickets/{id}/ | Consulta de su estación |
-| POST | /api/v1/production/tickets/{id}/start/ | advance_kitchen_ticket o advance_bar_ticket |
-| POST | /api/v1/production/tickets/{id}/complete/ | Avance de su estación |
-| POST | /api/v1/production/tickets/{id}/cancel/ | cancel_ticket y consulta de la estación |
-
-Listados paginados: 50 elementos, formato count/next/previous/results. Tickets acepta
-`?station=KITCHEN&status=PENDING` o BAR y otros estados válidos. Los filtros nunca
-amplían permisos. La consulta de un ID de otra estación devuelve 404.
-La lista administrativa incluye pedidos demo liberados y pendientes, diferenciados
-por production_status y released_at. No incluye nombre del cliente ni claves idempotentes.
-
-Release/start/complete aceptan cuerpo vacío. Cancel exige:
-
-```json
-{"reason": "Faltan insumos para preparar este producto"}
-```
-
-Release devuelve un arreglo de tickets con 201; repetir devuelve los existentes con
-200. Start/complete/cancel devuelven el ticket actualizado con 200. Repetir el estado
-actual no crea eventos nuevos ni cambia el motivo original. Una transición incompatible
-devuelve 409. Motivo vacío o mayor a 500 caracteres devuelve 400. Sin permiso: 403.
-
-Cada ticket muestra id, public_code, fulfillment, table_label, station_code, status,
-demo=true, fechas y líneas con nombre/cantidad. No expone precios, identidad del cliente
-ni auditoría interna. El cliente no controla estación, actor, demo ni estado destino.
-
-## Integridad
-
-- Solo pedidos DEMO_CONFIRMED con pago SIMULATED son admitidos. No hay producción real.
-- DELIVERY o cualquier estación desconocida rechaza el pedido completo sin efectos.
-- Se usan las estaciones y nombres guardados en OrderItem, no el catálogo actual.
-- Restricción única pedido/estación y línea de pedido única entre tickets.
-- Creación y transiciones transaccionales; todas bloquean primero el pedido.
-- Al terminar ambas estaciones se calcula READY bajo el mismo bloqueo.
-- Cancelaciones parciales conservan PARTIALLY_CANCELLED incluso si el resto termina.
-- TicketEvent registra actor, transición, fecha y motivo; el admin es de solo lectura.
-- payment_status y status originales permanecen intactos; production_status es separado.
-- No hay descuento de stock, reembolso, envío a equipos físicos ni seguimiento público nuevo.
-
-## Pruebas
-
-```sh
-python manage.py test accounts catalog orders production --settings=core.test_settings
-python manage.py makemigrations --check --dry-run --settings=core.test_settings
-```
-
-Las pruebas locales usan SQLite aislado. Validan permisos, CSRF, reintentos, rollback,
-estaciones, estados y auditoría. SQLite no valida select_for_update: antes de operar
-con múltiples estaciones, ejecutar pruebas concurrentes contra PostgreSQL de pruebas
-(dos liberaciones simultáneas y dos finalizaciones del mismo pedido). Nunca usar la
-base de producción para pruebas destructivas.
-
-## Pantallas y seguimiento
-
-- /staff/admin: pedidos pendientes y liberación manual de demostración.
-- /kitchen y /bar: columnas pendientes, en preparación, listos y cancelados.
-- Iniciar y marcar listo respetan permisos; administración puede cancelar con motivo.
-- /orders/:publicCode: seguimiento automático del estado agregado de preparación.
-
-Las consultas se repiten cada cinco segundos sin solaparse, se pausan con la pestaña
-oculta y se reanudan al volver. Las acciones solicitan una actualización inmediata.
-Los fallos de conexión conservan la última respuesta con un aviso de datos antiguos.
-Los listados recorren todas las páginas; para grandes historiales será necesario
-incorporar un filtro temporal y archivo de tickets antes de operar a escala.
-
-El endpoint público añade production_status; no expone tickets, usuarios ni auditoría.
-Una estación terminada no marca el pedido listo si falta la otra. Cancelaciones parciales
-se muestran expresamente y el pago permanece SIMULATED.
-
-Prueba manual: crea un pedido mixto, inicia sesión como ADMIN y libéralo; abre cocina y
-barra con sus respectivas cuentas, inicia/termina sus tickets y observa el enlace público.
-Prueba además cancelar un ticket con motivo, perder la conexión y volver a la pestaña.
+SQLite prueba reglas, permisos y rollback secuencial; las pruebas de bloqueo
+concurrente requieren PostgreSQL aislado. Las comprobaciones de navegador y carga
+operativa siguen siendo necesarias antes de un despliegue comercial.

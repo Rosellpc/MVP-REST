@@ -1,10 +1,10 @@
-"""Inventory sheets are immutable counts, separate from stock and recipe inputs."""
+"""Inventory reference counts; changes are audited, separate from operational stock."""
 import hashlib
 import io
 import posixpath
 import zipfile
 from datetime import datetime, timedelta
-from decimal import Decimal, ROUND_HALF_UP, InvalidOperation
+from decimal import Decimal, ROUND_HALF_UP, InvalidOperation, localcontext
 from xml.etree import ElementTree as ET
 from django.db import transaction
 from rest_framework import serializers
@@ -118,6 +118,13 @@ def import_workbook(content, filename, actor=None, sheet_name=None):
 
 
 def count_payload(count):
+    # Two 16-digit inputs per line, up to 1000 lines: default precision 28 is insufficient.
+    with localcontext() as context:
+        context.prec = 50
+        return _count_payload(count)
+
+
+def _count_payload(count):
     lines = []
     total = Decimal(0)
     for item in count.lines.all():

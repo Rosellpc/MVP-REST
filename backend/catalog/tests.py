@@ -10,6 +10,11 @@ from .views import MenuPagination, MenuThrottle
 
 
 class MenuAPITests(APITestCase):
+    def test_unsupported_delivery_station_is_not_offered_for_checkout(self):
+        station = Station.objects.create(code="DELIVERY", name="Entrega")
+        Product.objects.filter(pk=self.product.pk).update(station=station)
+        self.assertEqual(self.client.get(self.url).data["count"], 0)
+
     @classmethod
     def setUpTestData(cls):
         cls.category = Category.objects.create(name="Platos", display_order=2)

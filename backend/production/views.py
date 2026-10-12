@@ -141,4 +141,9 @@ class CancellationNotices(ListAPIView):
         station = self.request.query_params.get("station")
         if station:
             stations = [station] if station in stations else []
-        return CancellationRequest.objects.filter(approved_at__isnull=False, order__tickets__station_code__in=stations).select_related("order", "ticket", "requested_by").distinct().order_by("-approved_at", "-pk")
+        rows = CancellationRequest.objects.filter(approved_at__isnull=False, order__tickets__station_code__in=stations).select_related("order", "ticket", "requested_by").distinct().order_by("-approved_at", "-pk")
+        if "approved_since" in self.request.query_params:
+            from rest_framework.serializers import DateTimeField
+            since = DateTimeField().run_validation(self.request.query_params["approved_since"])
+            rows = rows.filter(approved_at__gte=since)
+        return rows

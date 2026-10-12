@@ -14,7 +14,7 @@ class Order(models.Model):
     customer_name = models.CharField(max_length=80)
     fulfillment = models.CharField(max_length=10, choices=Fulfillment.choices)
     table_label = models.CharField(max_length=20, blank=True)
-    # El checkout no libera producción; requiere una acción interna explícita.
+    # El checkout confirmado libera tickets y descuenta stock si su control está activo.
     status = models.CharField(max_length=20, default="DEMO_CONFIRMED", editable=False)
     payment_status = models.CharField(max_length=20, default="SIMULATED", editable=False)
     currency = models.CharField(max_length=3, default="PEN", editable=False)

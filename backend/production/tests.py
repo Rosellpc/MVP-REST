@@ -13,6 +13,17 @@ from .services import release_order_to_production, transition_ticket
 
 @override_settings(PRODUCTION_DEMO_ENABLED=True)
 class ProductionTests(TestCase):
+    def test_cancellation_notices_filter_date_and_identify_order(self):
+        from .services import approve_cancellation
+        self.release()
+        root = get_user_model().objects.create_superuser("notice-admin", password="test")
+        approve_cancellation(self.order.pk, root, "Prueba")
+        response = self.client.get("/api/v1/production/cancellation-notices/?station=KITCHEN&approved_since=2000-01-01T00:00:00Z")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data["results"][0]["order_number"], self.order.pk)
+        self.assertEqual(self.client.get("/api/v1/production/cancellation-notices/?approved_since=2999-01-01T00:00:00Z").data["count"], 0)
+        self.assertEqual(self.client.get("/api/v1/production/cancellation-notices/?approved_since=invalid").status_code, 400)
+
     def test_history_query_count_does_not_grow_per_order(self):
         from django.db import connection
         from django.test.utils import CaptureQueriesContext

@@ -2,7 +2,8 @@
 
 Módulo disponible en `/costing`, fuera de los layouts de menú y Staff.
 Comparte autenticación e infraestructura, pero no enlaza insumos a productos,
-pedidos ni tickets. No modifica existencias. No se importaron archivos Excel/PDF.
+pedidos ni tickets para consumir existencias. Incluye importadores Excel y referencias
+de procedencia del catálogo; estos vínculos no descuentan insumos por venta.
 
 ## Activación
 
@@ -79,7 +80,7 @@ API adicional:
 Pendientes para siguientes etapas: preparaciones intermedias, otros formatos
 de Excel/CSV, paginación de listados grandes y vinculación opcional al catálogo.
 La importación actual rechaza duplicados; no actualiza insumos existentes.
-Las recetas e insumos no se eliminan desde esta interfaz para conservar referencias.
+La acción de eliminar archiva recetas e insumos, conservando sus referencias e historial.
 
 Pruebas: `python manage.py test costing --settings=core.test_settings`.
 
@@ -101,7 +102,7 @@ inválidos y filas sin cantidades/precios válidos. Máximo 5 MB y 30 MB descomp
 Si hay varias hojas con datos, debe indicarse el nombre. Las hojas vacías se omiten.
 La huella del archivo y hoja evita duplicar exactamente la misma importación.
 
-Los conteos guardados son referencias inmutables; un conteo nuevo no se suma
+Los conteos pueden editarse o archivarse con auditoría; un conteo nuevo no se suma
 a los anteriores. La exportación CSV incluye encabezado y detalle completo.
 
 Endpoints protegidos: GET/POST `/api/v1/costing/inventory/`.
@@ -142,7 +143,12 @@ atribuida al usuario autenticado. Los importes se calculan con precios actuales;
 los totales proporcionados por el archivo no se aceptan como fuente del costo.
 Exportar un recetario no garantiza que pueda reimportarse en la misma base: los
 nombres existentes se rechazan intencionalmente. Para modificar recetas, usar
-el editor versionado. Los ingredientes deben existir antes de importar recetas.
+el editor versionado. Los ingredientes deben existir y estar activos antes de importar recetas.
+
+La exportación de formulaciones completas se divide en lotes de hasta 100 recetas.
+Las fichas pendientes sin composición quedan fuera de esos lotes. El respaldo de
+fichas vigentes conserva también pendientes, costos y procedencia para consulta;
+es un formato de respaldo distinto, no admitido por el importador de formulaciones.
 
 ## Importación del Excel de costeo
 

@@ -11,17 +11,18 @@ No necesita habilitar la Data API de Supabase ni instalar paquetes adicionales.
 
 ## Visibilidad
 
-Solo devuelve productos publicados y disponibles, con categoría y estación activas,
-siguiendo el alcance actual del README. Los productos agotados no aparecen en esta
-primera versión del endpoint. La edición se realiza desde Django Admin.
+Solo devuelve productos publicados y disponibles, con categoría y estación activas
+de Cocina o Barra. Los productos con saldo cero siguen visibles como agotados.
+La edición del catálogo se realiza desde Django Admin.
 
-Devuelve únicamente ID, nombre, descripción, categoría (ID y nombre) y precio.
+Devuelve ID, nombre, descripción, imagen, categoría (ID y nombre), precio y stock.
 No expone SKU, estación, fechas internas ni otros campos administrativos.
-La moneda del piloto sigue pendiente de confirmación; el endpoint no inventa una.
+Los precios finales se expresan en PEN. `stock_quantity` es null antes de activar
+el control, cero si no hay turno abierto y el saldo disponible durante el turno.
 
 ## Consultas y respuesta
 
-- `/api/v1/menu/`: primera página, hasta 20 productos.
+- `/api/v1/menu/`: primera página, hasta 100 productos.
 - `/api/v1/menu/?page=2`: página siguiente.
 - `/api/v1/menu/?category=1`: productos de la categoría con ID 1.
 - `/api/v1/menu/?category=1&page=2`: ambos parámetros se pueden combinar.
