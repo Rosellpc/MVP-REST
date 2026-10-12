@@ -12,6 +12,7 @@ export default function StaffLayout() {
         <span>REST-OS</span><span className="staff-brand__caption">Espacio del personal</span>
       </Link>
       <nav aria-label="Áreas del personal"><NavLink to="/staff" end>Áreas</NavLink>
+        {user?.permissions.includes("accounts.access_staff") && <NavLink to="/dashboard">Dashboard</NavLink>}
         {user?.permissions.includes("accounts.access_staff") && <NavLink to="/staff/admin">Admin</NavLink>}
         {user?.permissions.includes("accounts.access_kitchen") && <NavLink to="/kitchen">Cocina</NavLink>}
         {user?.permissions.includes("accounts.access_bar") && <NavLink to="/bar">Barra</NavLink>}

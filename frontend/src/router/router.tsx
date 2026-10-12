@@ -6,6 +6,7 @@ import RequirePermission from "../features/auth/RequirePermission";
 import LoginPage from "../pages/LoginPage";
 import CostingPage from "../features/costing/CostingPage";
 import StockPage from "../features/stock/StockPage";
+import DashboardPage from "../features/dashboard/DashboardPage";
 import ProductionBoard from "../features/production/ProductionBoard";
 import { StaffHomePage } from "../pages/StaffPage";
 import ReleaseOrders from "../features/production/AdminOrderHistory";
@@ -39,6 +40,7 @@ const router = createBrowserRouter([
                 { path: "/stock", element: <StockPage /> },
             ] },
             { element: <RequirePermission permission="accounts.access_staff" />, children: [
+                { path: "/dashboard", element: <DashboardPage /> },
                 { path: "/staff/admin", element: <ReleaseOrders /> },
             ] },
             { element: <RequirePermission permission="accounts.access_kitchen" />, children: [

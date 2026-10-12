@@ -24,9 +24,19 @@ function ActionForm({ title, action, payload, children, onDone, onClose }: { tit
 export function ShiftForm({ data, mode, onDone, onClose }: { data: StockData; mode: "open" | "close"; onDone: () => void; onClose: () => void }) {
   const [rows, setRows] = useState(data.rows.map(row => ({ product_id: row.product_id, keep: row.quantity ? "" : "0", production: "0", counted: "", reason: "" })));
   const [notes, setNotes] = useState("");
+  const [copyMessage, setCopyMessage] = useState("");
+  function copyTheoreticalCounts() {
+    const quantities = new Map(data.rows.map(row => [row.product_id, row.quantity]));
+    setRows(current => current.map(row => ({ ...row, counted: String(quantities.get(row.product_id) ?? 0) })));
+    setCopyMessage("Cantidades teóricas copiadas. Puedes corregir cualquier conteo antes de confirmar el cierre.");
+  }
   function change(index: number, field: string, value: string) { setRows(current => current.map((row, i) => i === index ? { ...row, [field]: value } : row)); }
   return <ActionForm title={mode === "open" ? "Apertura y revisión de sobrantes" : "Conteo físico y cierre de turno"} action={mode} onDone={onDone} onClose={onClose} payload={() => ({ revision: data.revision, notes, ...(mode === "close" ? { shift_id: data.shift?.id } : {}), items: rows.map(row => mode === "open" ? { product_id: row.product_id, keep: Number(row.keep), production: Number(row.production), reason: row.reason } : { product_id: row.product_id, counted: Number(row.counted), reason: row.reason }) })}>
     <p>{mode === "open" ? "Confirma las unidades que siguen aptas para servir. Los sobrantes descartados generarán una merma. Registra la producción nueva por separado. Al confirmar se activa el control de venta de todos estos productos." : "Cuenta las unidades reales sin incluir pedidos ya descontados. Justifica cada diferencia. Si hay ventas o movimientos durante el conteo, será necesario volver a cargarlo. El cierre es definitivo y pausa la venta hasta el siguiente turno."}</p>
+    {mode === "close" && <>
+      <div className="stock-actions"><button type="button" onClick={copyTheoreticalCounts}>Copiar teórico al conteo físico</button><small>Reemplaza todos los conteos con las cantidades teóricas mostradas.</small></div>
+      <p role="status">{copyMessage}</p>
+    </>}
     <div className="stock-table-wrap"><table><thead><tr><th>Producto</th><th>{mode === "open" ? "Saldo anterior" : "Teórico"}</th><th>{mode === "open" ? "Sobrante apto" : "Conteo físico"}</th>{mode === "open" && <th>Producción nueva</th>}<th>Justificación</th></tr></thead><tbody>{data.rows.map((item, index) => <tr key={item.product_id}><th scope="row">{item.name}<small>{item.sku}</small></th><td>{item.quantity}</td><td><input aria-label={`${mode === "open" ? "Apto" : "Conteo"} ${item.name}`} type="number" min="0" max={mode === "open" ? item.quantity : 1000000} step="1" required value={mode === "open" ? rows[index].keep : rows[index].counted} onChange={e => change(index, mode === "open" ? "keep" : "counted", e.target.value)} /></td>{mode === "open" && <td><input aria-label={`Producción ${item.name}`} required type="number" min="0" max="1000000" step="1" value={rows[index].production} onChange={e => change(index, "production", e.target.value)} /></td>}<td><input aria-label={`Motivo ${item.name}`} maxLength={500} required={Number(mode === "open" ? rows[index].keep : rows[index].counted) !== item.quantity} value={rows[index].reason} onChange={e => change(index, "reason", e.target.value)} placeholder="Caducidad, diferencia, conservación…" /></td></tr>)}</tbody></table></div>
     <label>Observaciones del responsable<textarea maxLength={2000} value={notes} onChange={e => setNotes(e.target.value)} /></label>
     <label className="stock-check"><input type="checkbox" required />{mode === "open" ? "He revisado la aptitud de los sobrantes y las cantidades ingresadas." : "He verificado el conteo físico y las diferencias."}</label>

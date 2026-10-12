@@ -4,6 +4,7 @@ import { useAuth } from "../features/auth/useAuth";
 import { AuthError, checkArea } from "../features/auth/authApi";
 
 const areas = [
+  { name: "Dashboard", path: "/dashboard", permission: "accounts.access_staff" },
   { name: "Stock", path: "/stock", permission: "stock.view_stock" },
   { name: "Administración", path: "/staff/admin", permission: "accounts.access_staff" },
   { name: "Cocina", path: "/kitchen", permission: "accounts.access_kitchen" },

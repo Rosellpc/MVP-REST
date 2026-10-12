@@ -1,5 +1,9 @@
 # RestaurantOS — Plataforma Full Stack de autoservicio y gestión de restaurante
 
+**Dashboard operativo:** `/dashboard` reúne importes de pedidos de demostración,
+producción, stock y cobertura de costeo, con filtros por fecha y exportación CSV.
+[Definiciones, permisos y límites actuales](docs/dashboard.md).
+
 **Stock de productos terminados:** `/stock` incorpora turnos, producción,
 mermas, ajustes, conciliación e historial. Al abrir el primer turno, el checkout
 descuenta unidades y las cancelaciones aprobadas devuelven o registran merma según
