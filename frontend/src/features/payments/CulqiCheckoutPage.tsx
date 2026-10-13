@@ -3,6 +3,7 @@ import { Link, Navigate, useNavigate } from "react-router";
 import { useCart } from "../cart/CartContext";
 import { CART_STORAGE_KEY } from "../cart/cartState";
 import type { OrderQuote } from "../orders/orderApi";
+import CheckoutSteps from "./CheckoutSteps";
 import { authenticate, openCheckout, setup3DS } from "./culqi";
 import { PAYMENT_STORAGE, PaymentApiError, paymentRequest, readPendingPayment, savePendingPayment, type Config, type Payment, type PendingPayment } from "./api";
 
@@ -18,6 +19,7 @@ export default function CulqiCheckoutPage({ config }: { config: Config }) {
   const [accepted, setAccepted] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [quoteRetry, setQuoteRetry] = useState(0);
   const guard = useRef(false);
   const checkoutRef = useRef<{ close: () => void } | null>(null);
   const authenticationController = useRef<AbortController | null>(null);
@@ -30,7 +32,7 @@ export default function CulqiCheckoutPage({ config }: { config: Config }) {
     paymentRequest<OrderQuote>("preview/", { items: JSON.parse(cartKey) }, undefined, controller.signal)
       .then(setQuote).catch(err => { if (!controller.signal.aborted) setError(err.message); });
     return () => controller.abort();
-  }, [cartKey, pending]);
+  }, [cartKey, pending, quoteRetry]);
   useEffect(() => () => { checkoutRef.current?.close(); authenticationController.current?.abort(); }, []);
 
   const receive = useCallback((result: Payment) => {
@@ -77,7 +79,11 @@ export default function CulqiCheckoutPage({ config }: { config: Config }) {
 
   function submit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!quote || !accepted) return;
+    if (!quote || !accepted || guard.current) return;
+    if (!name.trim() || (fulfillment === "DINE_IN" && !table.trim())) {
+      setError("Completa tu nombre y la mesa si consumirás en el local.");
+      return;
+    }
     void run(() => prepare({ key: crypto.randomUUID(), chargeKey: crypto.randomUUID(),
       payload: { customer_name: name.trim(), fulfillment, table_label: fulfillment === "DINE_IN" ? table.trim() : "",
         expected_total: quote.total, items: JSON.parse(cartKey) } }));
@@ -109,39 +115,48 @@ export default function CulqiCheckoutPage({ config }: { config: Config }) {
 
   if (items.length === 0 && !pending) return <Navigate to="/cart" replace />;
   const terminal = payment && ["FAILED", "EXPIRED"].includes(payment.payment_status);
-  return <main className="main-content cart-page">
+  return <main className="main-content cart-page checkout-page">
+    <CheckoutSteps payment={Boolean(pending)} />
     <p className="eyebrow">Checkout · Culqi</p><h1>Completa tu pedido</h1>
     <p className="demo-notice">Entorno de integración: utiliza medios de pago de prueba. No se cobrará dinero real. El pago aprobado enviará tickets de prueba a Cocina y Barra.</p>
     {error && <p className="checkout-error" role="alert">{error}</p>}
-    {pending ? <section className="cart-panel">
+    {pending ? <section className="cart-panel checkout-status" aria-busy={busy}>
       <h2>{terminal ? "Intento finalizado sin pago" : "Tu pago de prueba"}</h2>
-      <p>Total: S/ {pending.payload.expected_total}</p>
+      <div className="cart-total"><span>Total del pedido · PEN</span><strong>S/ {pending.payload.expected_total}</strong></div>
+      <p className="cart-muted">{pending.payload.customer_name} · {pending.payload.fulfillment === "DINE_IN" ? `Mesa ${pending.payload.table_label}` : "Recoger para llevar"}</p>
       <p role="status">{busy ? "Procesando… No cierres esta página." : payment?.payment_status === "PENDING" ? "Productos reservados. Continúa con el pago." : payment?.payment_status === "REQUIRES_ACTION" ? "Completa la autenticación de tu tarjeta." : terminal ? "Puedes regresar al carrito para iniciar otro intento." : "Estamos verificando el resultado. Conservamos tu referencia para evitar duplicados."}</p>
-      {payment?.payment_status === "PENDING" && <><p>Reserva hasta {new Date(payment.reservation_expires_at).toLocaleTimeString("es-PE")}</p><button className="cart-button" disabled={busy} onClick={() => void run(pay)}>Pagar con tarjeta de prueba</button></>}
+      {payment?.payment_status === "PENDING" && <><p>Reserva hasta {new Date(payment.reservation_expires_at).toLocaleTimeString("es-PE")}</p><button className="cart-button" disabled={busy || !payment.charging_available} onClick={() => void run(pay)}>Pagar con tarjeta de prueba</button></>}
+      {payment?.payment_status === "PENDING" && !payment.charging_available && <p role="status">El pago no está disponible para este intento. Consulta el estado del pedido antes de continuar.</p>}
       {payment?.payment_status === "REQUIRES_ACTION" && resume3DS && <button className="cart-button" disabled={busy} onClick={() => void run(() => authenticateAndSend(pending, resume3DS))}>Continuar autenticación</button>}
       {!terminal && <button className="cart-button" disabled={busy} onClick={() => void run(async () => {
         if (!pending.code) await prepare(pending);
         else receive(await paymentRequest<Payment>(`${pending.code}/reconcile/`, {}));
-      })}>Consultar / recuperar intento</button>}
+      })}>Consultar estado del pedido</button>}
       {payment?.payment_status === "REQUIRES_ACTION" && !resume3DS && <p>La sesión de autenticación se interrumpió. Puedes cancelar este intento antes de iniciar uno nuevo.</p>}
       {payment && ["PENDING", "REQUIRES_ACTION"].includes(payment.payment_status) && <button className="cart-text-button" disabled={busy} onClick={() => void run(async () => {
         checkoutRef.current?.close(); authenticationController.current?.abort();
         receive(await paymentRequest<Payment>(`${pending.code}/abandon/`, {}));
       })}>Cancelar este intento sin cobro</button>}
-      {pending.code && <p className="order-code">{pending.code}</p>}
+      {pending.code && <p className="cart-muted">Referencia del pedido: <span className="order-code">{pending.code}</span></p>}
       {terminal && <button className="cart-button" onClick={() => { sessionStorage.removeItem(PAYMENT_STORAGE); setPending(null); setPayment(null); navigate("/cart"); }}>Volver al carrito</button>}
-    </section> : quote ? <form className="cart-layout checkout-form" onSubmit={submit}>
+    </section> : quote ? <form className="cart-layout checkout-form" onSubmit={submit} aria-busy={busy}>
       <section className="cart-panel"><h2>Datos para la entrega</h2>
         <label>Tu nombre<input required maxLength={80} autoComplete="given-name" value={name} onChange={e => setName(e.target.value)} /></label>
         <label>Modalidad<select value={fulfillment} onChange={e => setFulfillment(e.target.value as "DINE_IN" | "PICKUP")}><option value="DINE_IN">Consumir en mesa</option><option value="PICKUP">Recoger para llevar</option></select></label>
-        {fulfillment === "DINE_IN" && <label>Mesa<input required maxLength={20} value={table} onChange={e => setTable(e.target.value)} /></label>}
+        {fulfillment === "DINE_IN" && <label>Número o nombre de mesa<input placeholder="Ej.: 12" required maxLength={20} value={table} onChange={e => setTable(e.target.value)} /></label>}
         <Link className="cart-back-link" to="/cart">Modificar carrito</Link>
       </section>
-      <aside className="cart-panel"><h2>Tu pedido</h2><ul className="checkout-lines">{quote.items.map(item => <li key={item.product_id}><span>{item.quantity} × {item.name}</span><strong>S/ {Number(item.line_total).toFixed(2)}</strong></li>)}</ul>
+      <aside className="cart-panel cart-summary"><h2>Tu pedido</h2><ul className="checkout-lines">{quote.items.map(item => <li key={item.product_id}><span>{item.quantity} × {item.name}</span><strong>S/ {Number(item.line_total).toFixed(2)}</strong></li>)}</ul>
         <div className="cart-total"><span>Total · impuestos incluidos</span><strong>S/ {quote.total}</strong></div>
         <label className="checkout-check"><input type="checkbox" required checked={accepted} onChange={e => setAccepted(e.target.checked)} />Entiendo que es un pago de prueba.</label>
-        <button className="cart-button" disabled={busy || !accepted}>Reservar y continuar al pago</button>
+        <p className="cart-muted">Primero reservaremos tus productos. Después ingresarás los datos de prueba en el formulario de Culqi.</p>
+        <button className="cart-button" disabled={busy || !accepted}>{busy ? "Reservando productos…" : "Reservar y continuar al pago"}</button>
       </aside>
-    </form> : <p role="status">{error ? "Vuelve al carrito para revisar los productos." : "Verificando precios y disponibilidad…"} <Link to="/cart">Volver al carrito</Link></p>}
+    </form> : <section className="cart-panel checkout-status" aria-busy={!error}>
+      <h2>{error ? "No pudimos verificar tu pedido" : "Revisando tu pedido…"}</h2>
+      <p role="status">{error ? "Puedes volver a intentarlo o modificar tu carrito." : "Verificando precios y disponibilidad antes de continuar."}</p>
+      {error && <button className="cart-button" onClick={() => { setError(""); setQuoteRetry(value => value + 1); }}>Reintentar</button>}
+      <Link className="cart-back-link" to="/cart">Volver al carrito</Link>
+    </section>}
   </main>;
 }

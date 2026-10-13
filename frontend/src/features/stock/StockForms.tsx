@@ -25,6 +25,24 @@ export function ShiftForm({ data, mode, onDone, onClose }: { data: StockData; mo
   const [rows, setRows] = useState(data.rows.map(row => ({ product_id: row.product_id, keep: row.quantity ? "" : "0", production: "0", counted: "", reason: "" })));
   const [notes, setNotes] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
+  function copyPreviousBalances() {
+    const quantities = new Map(data.rows.map(row => [row.product_id, row.quantity]));
+    setRows(current => current.map(row => ({ ...row, keep: String(quantities.get(row.product_id) ?? 0) })));
+    setCopyMessage(`Saldo anterior copiado a sobrante apto en ${rows.length} productos. Revisa su aptitud y ajusta lo necesario antes de confirmar.`);
+  }
+  function addProductionBatch() {
+    const quantities = new Map(data.rows.map(row => [row.product_id, row.quantity]));
+    if (rows.some(row => {
+      const production = Number(row.production);
+      const keep = row.keep === "" ? quantities.get(row.product_id) ?? 0 : Number(row.keep);
+      return !Number.isInteger(production) || production < 0 || !Number.isInteger(keep) || keep < 0 || keep + production + 10 > 1000000;
+    })) {
+      setCopyMessage("No se añadió el lote. Revisa las cantidades: deben ser enteras, no negativas y el saldo final no puede superar 1.000.000 por producto.");
+      return;
+    }
+    setRows(current => current.map(row => ({ ...row, production: String(Number(row.production) + 10) })));
+  
+  }
   function copyTheoreticalCounts() {
     const quantities = new Map(data.rows.map(row => [row.product_id, row.quantity]));
     setRows(current => current.map(row => ({ ...row, counted: String(quantities.get(row.product_id) ?? 0) })));
@@ -33,6 +51,14 @@ export function ShiftForm({ data, mode, onDone, onClose }: { data: StockData; mo
   function change(index: number, field: string, value: string) { setRows(current => current.map((row, i) => i === index ? { ...row, [field]: value } : row)); }
   return <ActionForm title={mode === "open" ? "Apertura y revisión de sobrantes" : "Conteo físico y cierre de turno"} action={mode} onDone={onDone} onClose={onClose} payload={() => ({ revision: data.revision, notes, ...(mode === "close" ? { shift_id: data.shift?.id } : {}), items: rows.map(row => mode === "open" ? { product_id: row.product_id, keep: Number(row.keep), production: Number(row.production), reason: row.reason } : { product_id: row.product_id, counted: Number(row.counted), reason: row.reason }) })}>
     <p>{mode === "open" ? "Confirma las unidades que siguen aptas para servir. Los sobrantes descartados generarán una merma. Registra la producción nueva por separado. Al confirmar se activa el control de venta de todos estos productos." : "Cuenta las unidades reales sin incluir pedidos ya descontados. Justifica cada diferencia. Si hay ventas o movimientos durante el conteo, será necesario volver a cargarlo. El cierre es definitivo y pausa la venta hasta el siguiente turno."}</p>
+    {mode === "open" && <>
+      <div className="stock-actions" role="group" aria-label="Acciones para todos los productos">
+        <button type="button" disabled={!rows.length} onClick={copyPreviousBalances}>Copiar saldo anterior</button>
+        <button type="button" disabled={!rows.length} onClick={addProductionBatch}>Añadir +10 de producción</button>
+      </div>
+      <p className="stock-caption">Copiar reemplaza todos los sobrantes aptos. Cada clic en +10 suma un lote a la producción ingresada de todos los productos. Puedes editar cada fila antes de guardar.</p>
+      <p role="status">{copyMessage}</p>
+    </>}
     {mode === "close" && <>
       <div className="stock-actions"><button type="button" onClick={copyTheoreticalCounts}>Copiar teórico al conteo físico</button><small>Reemplaza todos los conteos con las cantidades teóricas mostradas.</small></div>
       <p role="status">{copyMessage}</p>

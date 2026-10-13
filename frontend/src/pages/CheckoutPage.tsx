@@ -1,5 +1,6 @@
 import { useRef, useState, type SubmitEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router";
+import CheckoutSteps from "../features/payments/CheckoutSteps";
 import { useCart } from "../features/cart/CartContext";
 import { CART_STORAGE_KEY } from "../features/cart/cartState";
 import { createOrder, OrderApiError, type OrderPayload } from "../features/orders/orderApi";
@@ -75,8 +76,9 @@ export default function CheckoutPage() {
   if (items.length === 0 && !pending) return <Navigate to="/cart" replace />;
 
   return (
-      <main className="main-content cart-page">
-        <p className="eyebrow">Tu pedido · Paso 2 de 2</p>
+      <main className="main-content cart-page checkout-page">
+        <CheckoutSteps payment={Boolean(pending)} />
+        <p className="eyebrow">Tu pedido · Demostración</p>
         <h1>Confirma tu pedido</h1>
         <p className="demo-notice">Demostración: al confirmar se enviarán tickets de prueba a Cocina y Barra según tus productos. No se cobrará dinero ni se realizarán preparaciones reales.</p>
         {error && <p className="checkout-error" role="alert">{error}</p>}
@@ -89,7 +91,7 @@ export default function CheckoutPage() {
               {submitting ? "Procesando…" : "Recuperar confirmación"}
             </button>
           </section>
-        ) : loading ? <p role="status">Verificando precios y disponibilidad…</p>
+        ) : loading ? <section className="cart-panel checkout-status" aria-busy="true"><h2>Revisando tu pedido…</h2><p role="status">Verificando precios y disponibilidad.</p></section>
           : quoteError ? (
             <section className="cart-panel">
               <p role="alert">{quoteError}</p>
