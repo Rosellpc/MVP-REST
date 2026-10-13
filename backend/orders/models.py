@@ -4,6 +4,25 @@ from django.db import models
 
 
 class Order(models.Model):
+    class Status(models.TextChoices):
+        DEMO_CONFIRMED = "DEMO_CONFIRMED", "Confirmado (demo)"
+        PENDING_PAYMENT = "PENDING_PAYMENT", "Pendiente de pago"
+        CONFIRMED = "CONFIRMED", "Confirmado"
+        EXPIRED = "EXPIRED", "Reserva vencida"
+        CANCELLED = "CANCELLED", "Cancelado"
+
+    class PaymentStatus(models.TextChoices):
+        SIMULATED = "SIMULATED", "Simulado"
+        PENDING = "PENDING", "Pendiente"
+        PROCESSING = "PROCESSING", "Procesando"
+        REQUIRES_ACTION = "REQUIRES_ACTION", "Requiere autenticación"
+        UNKNOWN = "UNKNOWN", "Por conciliar"
+        PAID = "PAID", "Pagado"
+        FAILED = "FAILED", "Fallido"
+        EXPIRED = "EXPIRED", "Vencido"
+        REFUND_PENDING = "REFUND_PENDING", "Reembolso pendiente"
+        REFUNDED = "REFUNDED", "Reembolsado"
+
     class Fulfillment(models.TextChoices):
         DINE_IN = "DINE_IN", "En mesa"
         PICKUP = "PICKUP", "Para recoger"
@@ -15,8 +34,8 @@ class Order(models.Model):
     fulfillment = models.CharField(max_length=10, choices=Fulfillment.choices)
     table_label = models.CharField(max_length=20, blank=True)
     # El checkout confirmado libera tickets y descuenta stock si su control está activo.
-    status = models.CharField(max_length=20, default="DEMO_CONFIRMED", editable=False)
-    payment_status = models.CharField(max_length=20, default="SIMULATED", editable=False)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.DEMO_CONFIRMED, editable=False)
+    payment_status = models.CharField(max_length=20, choices=PaymentStatus.choices, default=PaymentStatus.SIMULATED, editable=False)
     currency = models.CharField(max_length=3, default="PEN", editable=False)
     total = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     created_at = models.DateTimeField(auto_now_add=True)

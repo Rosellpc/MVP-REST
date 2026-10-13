@@ -6,7 +6,7 @@ import "../../styles/staff-operations.css";
 
 type Order = {
   id: number; public_code: string; production_status: string; created_at: string;
-  fulfillment: string; table_label: string; total: string; currency: string;
+  fulfillment: string; table_label: string; total: string; currency: string; payment_status: string;
   items: { product_id: number; name: string; quantity: number; line_total: string }[];
   tickets: { id: number; station_code: string; status: string; created_at: string; started_at: string | null; completed_at: string | null; cancelled_at: string | null; archived_at: string | null }[];
   cancellation_request: { reason: string; requested_by: string; station: string; created_at: string; approved_at: string | null; rejected_at: string | null; rejection_reason: string } | null;
@@ -30,7 +30,7 @@ function OrderDetail({ order, refresh }: { order: Order; refresh: () => void }) 
     finally { setBusy(false); }
   }
   return <div className="order-detail-grid">
-    <section><h3>Productos</h3><ul>{order.items.map(item => <li key={item.product_id}>{item.quantity} × {item.name} · {order.currency} {item.line_total}</li>)}</ul><p className="ticket-code">Referencia: {order.public_code}</p><p>Pago simulado</p></section>
+    <section><h3>Productos</h3><ul>{order.items.map(item => <li key={item.product_id}>{item.quantity} × {item.name} · {order.currency} {item.line_total}</li>)}</ul><p className="ticket-code">Referencia: {order.public_code}</p><p>{order.payment_status === "PAID" ? "Culqi · pago aprobado en integración (sin dinero real)" : "Pago simulado"}</p></section>
     <section><h3>Historial por estación</h3>{order.tickets.map(ticket => <div key={ticket.id}><strong>{ticket.station_code === "KITCHEN" ? "Cocina" : "Barra"} · {labels[ticket.status] ?? ticket.status}</strong><ul>{([
       ["Recibido", ticket.created_at], ["Iniciado", ticket.started_at], ["Listo", ticket.completed_at], ["Cancelado", ticket.cancelled_at], ["Archivado", ticket.archived_at],
     ] as const).map(([label, timestamp]) => timestamp && <li key={label}>{label}: {date(timestamp)}</li>)}</ul></div>)}</section>

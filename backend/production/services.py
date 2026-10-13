@@ -31,10 +31,16 @@ def release_checkout_order(order_id):
     return _release_order(order_id, None)
 
 
-def _release_order(order_id, actor):
+@transaction.atomic
+def release_paid_test_order(order_id):
+    return _release_order(order_id, None, paid_test=True)
+
+
+def _release_order(order_id, actor, paid_test=False):
     require_demo_enabled()
     order = get_object_or_404(Order.objects.select_for_update(), pk=order_id)
-    if order.status != "DEMO_CONFIRMED" or order.payment_status != "SIMULATED":
+    verified_test = paid_test and order.status == "CONFIRMED" and order.payment_status == "PAID" and order.payment.environment == "test" and order.payment.status == "PAID" and order.stock_reservation.status == "CONSUMED"
+    if not verified_test and (paid_test or order.status != "DEMO_CONFIRMED" or order.payment_status != "SIMULATED"):
         raise Conflict("Solo se admiten pedidos confirmados de demostración.")
     if order.released_at:
         return list(order.tickets.all()), False

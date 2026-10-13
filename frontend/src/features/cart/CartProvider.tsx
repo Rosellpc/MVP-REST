@@ -1,6 +1,7 @@
 import { useEffect, useReducer, type ReactNode } from "react";
 import { CartContext } from "./CartContext";
 import { readAttempt } from "../orders/checkoutAttempt";
+import { readPendingPayment } from "../payments/api";
 import { CART_STORAGE_KEY, cartReducer, cartSubtotal, parseStoredCart, priceToCents } from "./cartState";
 
 export default function CartProvider({ children }: { children: ReactNode }) {
@@ -26,7 +27,7 @@ export default function CartProvider({ children }: { children: ReactNode }) {
       itemCount: items.reduce((count, item) => count + item.quantity, 0),
       subtotal: cartSubtotal(items),
       addItem: (product) => {
-        if (readAttempt()) throw new Error("Primero recupera la confirmación pendiente desde el checkout.");
+        if (readAttempt() || readPendingPayment()) throw new Error("Primero recupera la confirmación pendiente desde el checkout.");
         priceToCents(product.sale_price);
         dispatch({ type: "add", product });
       },

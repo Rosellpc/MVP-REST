@@ -1,5 +1,5 @@
 from rest_framework.authentication import SessionAuthentication
-from django.db.models import Count
+from django.db.models import Count, Q
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.pagination import PageNumberPagination
@@ -28,7 +28,7 @@ class StaffOrderList(ListAPIView):
     queryset = Order.objects.filter(status="DEMO_CONFIRMED", payment_status="SIMULATED").select_related("cancellation_request__requested_by", "cancellation_request__ticket").prefetch_related("items", "tickets__items", "tickets__order__cancellation_request__requested_by", "tickets__order__cancellation_request__ticket").order_by("-created_at", "-pk")
 
     def get_queryset(self):
-        queryset = super().get_queryset()
+        queryset = Order.objects.filter(Q(status="DEMO_CONFIRMED", payment_status="SIMULATED") | Q(status="CONFIRMED", payment_status="PAID", payment__environment="test")).select_related("cancellation_request__requested_by", "cancellation_request__ticket").prefetch_related("items", "tickets__items", "tickets__order__cancellation_request__requested_by", "tickets__order__cancellation_request__ticket").order_by("-created_at", "-pk")
         status = self.request.query_params.get("status")
         if status:
             if status not in ("PENDING", "IN_PROGRESS", "READY", "CANCELLED"):
@@ -44,7 +44,7 @@ class StaffOrderCounts(APIView):
     permission_classes = [CanReleaseOrders]
 
     def get(self, request):
-        orders = Order.objects.filter(status="DEMO_CONFIRMED", payment_status="SIMULATED")
+        orders = Order.objects.filter(Q(status="DEMO_CONFIRMED", payment_status="SIMULATED") | Q(status="CONFIRMED", payment_status="PAID", payment__environment="test"))
         counts = {row["production_status"]: row["count"] for row in orders.values("production_status").annotate(count=Count("pk"))}
         counts["ALL"] = sum(counts.values())
         counts["requests"] = orders.filter(cancellation_request__isnull=False, cancellation_request__approved_at__isnull=True, cancellation_request__rejected_at__isnull=True).count()

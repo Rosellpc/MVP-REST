@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     "production.apps.ProductionConfig",
     "costing",
     "stock",
+    "payments",
 ]
 
 MIDDLEWARE = [

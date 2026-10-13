@@ -159,6 +159,8 @@ No ejecutar pruebas destructivas contra los datos del restaurante.
 
 ## Documentación
 
+- [Pagos Culqi: checkout de pruebas, 3DS, reservas y conciliación](docs/payments.md).
+
 - [API de menú](backend/catalog/API.md) y [fichas de producto](docs/menu-product-details.md).
 - [Checkout](docs/checkout-demo.md) y [acceso y roles](docs/production-flow.md).
 - [Producción y cancelaciones](docs/production-api.md).

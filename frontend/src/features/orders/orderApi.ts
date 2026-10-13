@@ -16,8 +16,9 @@ export type OrderQuote = {
 
 export type Order = OrderQuote & {
   public_code: string;
-  status: "DEMO_CONFIRMED";
-  payment_status: "SIMULATED";
+  status: "DEMO_CONFIRMED" | "CONFIRMED";
+  payment_status: "SIMULATED" | "PAID";
+  payment_environment: "demo" | "test";
   fulfillment: "DINE_IN" | "PICKUP";
   created_at: string;
   production_status: "NOT_RELEASED" | "PENDING" | "IN_PROGRESS" | "READY" | "CANCELLED" | "PARTIALLY_CANCELLED";

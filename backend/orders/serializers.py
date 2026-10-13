@@ -45,6 +45,10 @@ class PublicOrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     demo = serializers.SerializerMethodField()
     prices_include_taxes = serializers.SerializerMethodField()
+    payment_environment = serializers.SerializerMethodField()
+
+    def get_payment_environment(self, obj):
+        return "test" if obj.payment_status == "PAID" else "demo"
 
     def get_demo(self, obj):
         return True
@@ -56,4 +60,4 @@ class PublicOrderSerializer(serializers.ModelSerializer):
         model = Order
         # La consulta pública no expone nombre del cliente, mesa ni clave idempotente.
         fields = ["public_code", "status", "payment_status", "currency", "total",
-                  "created_at", "fulfillment", "items", "demo", "prices_include_taxes", "production_status"]
+                  "created_at", "fulfillment", "items", "demo", "prices_include_taxes", "production_status", "payment_environment"]

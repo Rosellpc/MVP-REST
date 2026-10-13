@@ -50,9 +50,15 @@ INSTALLED_APPS = [
     "production.apps.ProductionConfig",
     "costing",
     "stock",
+    "payments",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
+PAYMENTS_ENABLED = env.bool("PAYMENTS_ENABLED", default=False)
+PAYMENTS_ENVIRONMENT = env("PAYMENTS_ENVIRONMENT", default="test")
+PAYMENT_RESERVATION_MINUTES = env.int("PAYMENT_RESERVATION_MINUTES", default=10)
+CULQI_PUBLIC_KEY = env("CULQI_PUBLIC_KEY", default="")
+CULQI_SECRET_KEY = env("CULQI_SECRET_KEY", default="")
 PRODUCTION_DEMO_ENABLED = env.bool("PRODUCTION_DEMO_ENABLED", default=env.bool("ORDER_DEMO_ENABLED", default=DEBUG))
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=["http://127.0.0.1:5173"] if DEBUG else [])

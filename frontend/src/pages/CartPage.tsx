@@ -1,12 +1,13 @@
 import { Link, Navigate } from "react-router";
 import { readAttempt } from "../features/orders/checkoutAttempt";
+import { readPendingPayment } from "../features/payments/api";
 import { useCart } from "../features/cart/CartContext";
 import { formatCartAmount, MAX_QUANTITY, priceToCents } from "../features/cart/cartState";
 
 export default function CartPage() {
   const { items, itemCount, subtotal, setQuantity, removeItem, clearCart } = useCart();
 
-  if (readAttempt()) return <Navigate to="/checkout" replace />;
+  if (readAttempt() || readPendingPayment()) return <Navigate to="/checkout" replace />;
 
   return (
       <main className="main-content cart-page">

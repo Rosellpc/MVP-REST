@@ -30,6 +30,9 @@ def active_shift():
 
 def move(shift, balance, kind, delta, reason, actor=None, order_item=None, reversal=None, quantity=None, pending=None):
     after = balance.quantity + delta
+    from .reservations import reserved_quantity
+    if delta < 0 and after < reserved_quantity(balance.product_id):
+        raise StockConflict(f"Hay unidades reservadas para pagos de {balance.product.name}. No puedes consumirlas ni ajustarlas.")
     if after < 0 or after > 1000000:
         raise StockConflict(f"Stock insuficiente o fuera de rango para {balance.product.name}. Disponible: {balance.quantity}.")
     balance.quantity = after
@@ -110,6 +113,8 @@ def operate(action, data, actor):
         shift = active_shift()
         if data["shift_id"] != shift.pk:
             raise StockConflict("El turno cambió.")
+        if shift.reservations.filter(status__in=["HELD", "PROCESSING"]).exists():
+            raise StockConflict("Hay reservas de pago pendientes. Vence las no iniciadas y concilia los cobros antes de cerrar el turno.")
         # Await every pending/preparing order that consumed this shift, including mixed orders.
         if Movement.objects.filter(shift=shift, kind="SALE", order_item__order__production_status__in=["PENDING", "IN_PROGRESS", "PARTIALLY_CANCELLED"]).exists():
             raise StockConflict("Completa o cancela los pedidos en preparación antes de cerrar el turno.")
@@ -155,7 +160,8 @@ def consume_order(order, lines, actor):
             raise StockConflict(f"{line.name} aún no tiene stock registrado en este turno.")
         if Movement.objects.filter(kind="SALE", order_item=line).exists():
             continue
-        move(shift, balance, "SALE", -line.quantity, "Checkout confirmado (pago simulado)", actor, line)
+        reason = "Checkout confirmado (Culqi integración)" if order.payment_status == "PAID" else "Checkout confirmado (pago simulado)"
+        move(shift, balance, "SALE", -line.quantity, reason, actor, line)
     bump(control)
 
 

@@ -29,8 +29,8 @@ function OrderTracking({ publicCode }: { publicCode: string }) {
           </section>
         ) : order && (
           <section className="cart-panel confirmation-panel">
-            <h1>Pedido de demostración registrado</h1>
-            <p className="demo-notice">Pago y preparación de demostración. No se realizan cobros ni preparaciones reales.</p>
+            <h1>{order.payment_environment === "test" ? "Pago de prueba confirmado en Culqi" : "Pedido de demostración registrado"}</h1>
+            <p className="demo-notice">{order.payment_environment === "test" ? "Culqi confirmó el cargo en integración. No se cobró dinero real. Tu pedido se envió a preparación de prueba." : "Pago y preparación de demostración. No se realizan cobros ni preparaciones reales."}</p>
             <OrderProgress status={order.production_status} />
             {error && <p role="alert">{error} Se muestra la última información recibida.</p>}
             <p>Conserva este enlace para consultar tu pedido.</p>

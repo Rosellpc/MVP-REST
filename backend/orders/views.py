@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django.conf import settings
+from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import AllowAny
@@ -53,7 +54,12 @@ class CreateOrderView(DemoOrderView):
         return Response(PublicOrderSerializer(order).data, status=201 if created else 200)
 
 
-class OrderDetailView(DemoOrderView):
+class OrderDetailView(APIView):
+    authentication_classes = []
+    permission_classes = [AllowAny]
+    throttle_classes = [OrderThrottle]
+
     def get(self, request, public_code):
-        order = get_object_or_404(Order.objects.prefetch_related("items"), public_code=public_code)
+        allowed = Q(status="DEMO_CONFIRMED", payment_status="SIMULATED") | Q(status="CONFIRMED", payment_status="PAID", payment__environment="test")
+        order = get_object_or_404(Order.objects.filter(allowed).prefetch_related("items"), public_code=public_code)
         return Response(PublicOrderSerializer(order).data)

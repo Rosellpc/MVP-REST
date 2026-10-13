@@ -15,7 +15,7 @@ import MenuPage from "../pages/MenuPage";
 import ProductDetailPage from "../pages/ProductDetailPage";
 import NotFoundPage from "../pages/NotFoundPage";
 import CartPage from "../pages/CartPage";
-import CheckoutPage from "../pages/CheckoutPage";
+import CheckoutPage from "../features/payments/CheckoutEntry";
 import OrderConfirmationPage from "../pages/OrderConfirmationPage";
 
 const router = createBrowserRouter([
