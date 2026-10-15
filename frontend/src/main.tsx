@@ -9,6 +9,8 @@ import router from "./router/router";
 import "./index.css";
 import "./styles/checkout.css";
 import "./styles/catalog.css";
+import "./styles/staff-theme.css";
+import "./styles/customer-theme.css";
 
 const rootElement = document.getElementById("root");
 

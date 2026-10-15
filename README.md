@@ -1,5 +1,7 @@
 ﻿# RestaurantOS — Autoservicio y gestión de restaurante
 
+**Despliegue:** [Guía Vercel + Render + Supabase](docs/deployment.md).
+
 Plataforma para conectar menú → pedido → Cocina/Barra → stock → indicadores,
 con un laboratorio de costeo y recetas versionadas.
 

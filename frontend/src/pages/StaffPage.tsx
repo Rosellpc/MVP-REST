@@ -4,18 +4,19 @@ import { useAuth } from "../features/auth/useAuth";
 import { AuthError, checkArea } from "../features/auth/authApi";
 
 const areas = [
-  { name: "Dashboard", path: "/dashboard", permission: "accounts.access_staff" },
-  { name: "Stock", path: "/stock", permission: "stock.view_stock" },
-  { name: "Costeo y recetario", path: "/costing", permission: "costing.use_costing" },
-  { name: "Administración", path: "/staff/admin", permission: "accounts.access_staff" },
-  { name: "Cocina", path: "/kitchen", permission: "accounts.access_kitchen" },
-  { name: "Barra", path: "/bar", permission: "accounts.access_bar" },
+  { name: "Dashboard", description: "Indicadores, evolución de pedidos y visión de la operación.", path: "/dashboard", permission: "accounts.access_staff", label: "Análisis" },
+  { name: "Stock", description: "Disponibilidad, turnos y movimientos de productos.", path: "/stock", permission: "stock.view_stock", label: "Inventario" },
+  { name: "Costeo y recetario", description: "Insumos, fichas técnicas y costos por porción.", path: "/costing", permission: "costing.use_costing", label: "Planificación" },
+  { name: "Administración", description: "Historial de pedidos y solicitudes de cancelación.", path: "/staff/admin", permission: "accounts.access_staff", label: "Control" },
+  { name: "Cocina", description: "Organiza los tickets y acompaña cada preparación.", path: "/kitchen", permission: "accounts.access_kitchen", label: "Producción" },
+  { name: "Barra", description: "Gestiona bebidas y actualiza el estado de tus tickets.", path: "/bar", permission: "accounts.access_bar", label: "Servicio" },
 ];
 
 export function StaffHomePage() {
   const { user } = useAuth();
-  return <main className="staff-content"><h1>Mis áreas de trabajo</h1><p>Selecciona un área autorizada para tu cuenta.</p>
-    <div className="staff-areas">{areas.filter(a => user?.permissions.includes(a.permission)).map(a => <Link className="staff-panel" key={a.path} to={a.path}>{a.name} ↗</Link>)}</div>
+  return <main className="staff-content staff-home"><header className="staff-home-heading"><p className="staff-eyebrow">REST–OS / Espacio de trabajo</p><h1>Tu operación.<br /><span>Todo conectado.</span></h1><p>Selecciona tu área para continuar. Cada herramienta, en su lugar.</p></header>
+    <div className="staff-section-heading"><h2>Mis áreas de trabajo</h2><span>Accesos según tu perfil</span></div>
+    <div className="staff-areas">{areas.filter(a => user?.permissions.includes(a.permission)).map(a => <Link className="staff-panel staff-area-card" key={a.path} to={a.path}><span className="staff-eyebrow">{a.label}</span><h3>{a.name}<span aria-hidden="true">↗</span></h3><p>{a.description}</p><span className="staff-area-open">Abrir área <span aria-hidden="true">→</span></span></Link>)}</div>
     {!areas.some(a => user?.permissions.includes(a.permission)) && <p>Tu cuenta no tiene áreas asignadas. Contacta al administrador.</p>}
   </main>;
 }
