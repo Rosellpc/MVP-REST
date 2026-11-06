@@ -6,10 +6,11 @@ VITE, CORS abierto ni cookies entre sitios. Esta guía prepara una demo sin cobr
 
 ## 1. Datos
 
-Usa preferentemente un proyecto Supabase separado para la demo. Una base vacía
-necesita importar catálogo, recetas y stock; las migraciones solo crean tablas.
-Si usas la base actual, la aplicación local y la pública modificarán los mismos
-datos. Haz un respaldo antes de desplegar. No expongas stock de trabajo a una demo.
+Este despliegue usa el proyecto Supabase existente; no crea otra base. La aplicación
+local y la pública modificarán los mismos pedidos, usuarios, catálogo, recetas y
+stock. El build de Render ejecuta migraciones y `setup_roles` sobre esta base.
+Antes de desplegar, genera y verifica un respaldo. No uses datos de prueba para
+alterar stock operativo ni confirmes pedidos simulados contra datos de ventas reales.
 Rota los secretos que fueron compartidos en capturas. No publiques `.env`.
 Las imágenes de `frontend/public` se despliegan con Vercel; revisa que las URLs de
 productos no apunten a localhost o a Windows. Los Excel originales no se publican.
@@ -74,7 +75,7 @@ Importa el repositorio y configura:
 | --- | --- |
 | Root Directory | frontend |
 | Framework | Vite |
-| Node | 22.x, versión 22.12 o superior |
+| Node | 26.x (alineado con `frontend/package.json`) |
 | Install Command | pnpm install --frozen-lockfile |
 | Build Command | pnpm run build |
 | Output Directory | dist |

@@ -109,7 +109,7 @@ StaffLayout; Costeo mantiene su navegación propia con enlaces entre módulos.
 
 ## Arranque local
 
-Entorno utilizado: Python 3.13, Node 22 y pnpm; PostgreSQL accesible desde Django.
+Entorno utilizado: Python 3.13, Node 26 y pnpm; PostgreSQL accesible desde Django.
 No crear nuevamente el proyecto con startproject/create-vite.
 
 Desde la raíz, en PowerShell:
