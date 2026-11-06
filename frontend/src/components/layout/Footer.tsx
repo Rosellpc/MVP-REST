@@ -38,6 +38,9 @@ export default function Footer() {
               <li>
                 <Link to="/cart">Mi carrito</Link>
               </li>
+              <li>
+                <Link to="/staff">Acceso de personal</Link>
+              </li>
             </ul>
           </nav>
 
