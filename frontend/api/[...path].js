@@ -18,8 +18,19 @@ export const config = {
 
 export default function handler(request, response) {
   const incomingUrl = new URL(request.url || "/", "https://vercel.invalid");
+  const routePath = request.query?.path;
+  const routeSegments = Array.isArray(routePath)
+    ? routePath
+    : typeof routePath === "string"
+      ? [routePath]
+      : [];
+  const apiPath = routeSegments.length > 0
+    ? `/api/${routeSegments.join("/")}${incomingUrl.pathname.endsWith("/") ? "/" : ""}`
+    : incomingUrl.pathname.startsWith("/api/")
+      ? incomingUrl.pathname
+      : `/api${incomingUrl.pathname.startsWith("/") ? "" : "/"}${incomingUrl.pathname}`;
   const upstreamUrl = new URL(
-    `${incomingUrl.pathname}${incomingUrl.search}`,
+    `${apiPath}${incomingUrl.search}`,
     API_ORIGIN,
   );
   const requestHeaders = { ...request.headers, host: API_ORIGIN.host };
