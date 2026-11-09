@@ -58,16 +58,7 @@ en `https://TU-BACKEND.onrender.com/admin/`, con sus estáticos servidos por Whi
 
 ## 3. Vercel
 
-Desde `frontend`, configura la URL real antes de publicar:
-
-```bash
-node scripts/configure-deploy.mjs https://TU-BACKEND.onrender.com
-pnpm run build
-```
-
-Guarda `frontend/vercel.json` actualizado en Git. Mientras contenga el marcador
-`.invalid`, el build en Vercel fallará explícitamente para evitar una demo rota.
-La dirección del backend no es un secreto.
+El frontend Vite usa funciones Node de Vercel en `frontend/api/`. `proxy.js` recibe las llamadas del navegador y las reenvía al backend Render; `health.js` expone una comprobación sencilla. El frontend usa `/api/proxy` en producción y el proxy de Vite en local. No necesita CORS abierto ni credenciales de Supabase en el navegador.
 
 Importa el repositorio y configura:
 
@@ -79,10 +70,9 @@ Importa el repositorio y configura:
 | Install Command | pnpm install --frozen-lockfile |
 | Build Command | pnpm run build |
 | Output Directory | dist |
+| Environment Variable (optional) | `API_BASE_URL=https://TU-BACKEND.onrender.com/api` |
 
-El proxy de API precede al fallback de React Router. Los errores de API no deben
-convertirse en HTML. Las respuestas de API se marcan privadas y sin caché.
-No pongas claves Django, de base de datos o de Culqi en Vercel.
+`API_BASE_URL` es una variable del servidor de Vercel, no lleva secretos y por defecto apunta a `https://mvp-rest.onrender.com/api`. `frontend/vercel.json` solo conserva el fallback de rutas de la SPA y los encabezados. No pongas claves Django, de base de datos o de Culqi en Vercel.
 
 ## 4. Verificación pública
 

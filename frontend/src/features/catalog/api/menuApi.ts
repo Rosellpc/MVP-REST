@@ -1,4 +1,5 @@
 import type { MenuResponse, Product, ProductDetail } from "../../../types/menu";
+import { apiFetch } from "../../../utils/apiFetch";
 
 export class ProductNotFoundError extends Error {
   constructor() {
@@ -8,7 +9,7 @@ export class ProductNotFoundError extends Error {
 
 export async function fetchProductDetail(id: string, signal: AbortSignal): Promise<ProductDetail> {
   if (!/^[1-9]\d*$/.test(id)) throw new ProductNotFoundError();
-  const response = await fetch(`/api/v1/menu/${encodeURIComponent(id)}/`, { signal });
+  const response = await apiFetch(`/api/v1/menu/${encodeURIComponent(id)}/`, { signal });
   if (response.status === 404) throw new ProductNotFoundError();
   if (!response.ok) throw new Error(`No se pudo cargar el producto (HTTP ${response.status}).`);
   return response.json();
@@ -20,7 +21,7 @@ export async function fetchMenuProducts(signal: AbortSignal): Promise<Product[]>
   let nextUrl: string | null = "/api/v1/menu/";
 
   while (nextUrl !== null) {
-    const response = await fetch(nextUrl, { signal });
+    const response = await apiFetch(nextUrl, { signal });
 
     if (!response.ok) {
       throw new Error(

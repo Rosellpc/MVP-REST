@@ -1,9 +1,10 @@
 import { request } from "../auth/authApi";
+import { apiFetch } from "../../utils/apiFetch";
 
 export const getCosting = (path: string, signal?: AbortSignal) => request(`costing/${path}/`, { signal });
 export async function saveCosting(path: string, body: unknown, method = "POST") {
   const { csrfToken } = await request("auth/csrf/");
-  const response = await fetch(`/api/v1/costing/${path}/`, {
+  const response = await apiFetch(`/api/v1/costing/${path}/`, {
     method, credentials: "same-origin", signal: AbortSignal.timeout(path === "recipes/workbook" ? 180000 : 10000),
     headers: body instanceof FormData ? { "X-CSRFToken": csrfToken } : { "Content-Type": "application/json", "X-CSRFToken": csrfToken }, body: body instanceof FormData ? body : JSON.stringify(body),
   });

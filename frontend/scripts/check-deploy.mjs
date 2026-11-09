@@ -1,8 +1,9 @@
-import { readFileSync } from 'node:fs';
+import { existsSync } from 'node:fs';
 
 if (process.env.VERCEL) {
-  const config = JSON.parse(readFileSync(new URL('../vercel.json', import.meta.url), 'utf8'));
-  if (config.rewrites[0].destination.includes('.invalid')) {
-    throw new Error('Configura la URL de Render con scripts/configure-deploy.mjs antes de desplegar.');
+  for (const file of ['../api/proxy.js', '../api/health.js']) {
+    if (!existsSync(new URL(file, import.meta.url))) {
+      throw new Error(`Missing required Vercel function: frontend/api/${file.slice(7)}`);
+    }
   }
 }

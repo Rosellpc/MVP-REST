@@ -1,3 +1,5 @@
+import { apiFetch } from "../../utils/apiFetch";
+
 export type OrderLine = {
   product_id: number;
   name: string;
@@ -55,7 +57,7 @@ function errorMessage(data: unknown): string {
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const timeout = AbortSignal.timeout(10000);
   const signal = options.signal ? AbortSignal.any([options.signal, timeout]) : timeout;
-  const response = await fetch(`/api/v1/${path}`, {
+  const response = await apiFetch(`/api/v1/${path}`, {
     ...options, signal,
     headers: { "Content-Type": "application/json", ...options.headers },
   });

@@ -1,3 +1,5 @@
+import { apiFetch } from "../../utils/apiFetch";
+
 export type StaffUser = {
   is_superuser: boolean;
   id: number;
@@ -16,7 +18,7 @@ export class AuthError extends Error {
 }
 
 export async function request(path: string, init: RequestInit = {}) {
-  const response = await fetch(`/api/v1/${path}`, {
+  const response = await apiFetch(`/api/v1/${path}`, {
     credentials: "same-origin",
     cache: "no-store",
     ...init,

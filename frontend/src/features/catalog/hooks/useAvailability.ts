@@ -1,7 +1,8 @@
 import { usePolling } from "../../production/usePolling";
+import { apiFetch } from "../../../utils/apiFetch";
 
 async function load(signal: AbortSignal): Promise<Record<string, number | null>> {
-  const response = await fetch("/api/v1/menu/stock/", { signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]), cache: "no-store" });
+  const response = await apiFetch("/api/v1/menu/stock/", { signal: AbortSignal.any([signal, AbortSignal.timeout(10000)]), cache: "no-store" });
   if (!response.ok) throw new Error("No se pudo actualizar la disponibilidad.");
   return response.json();
 }

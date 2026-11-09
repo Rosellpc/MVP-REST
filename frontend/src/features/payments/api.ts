@@ -1,4 +1,5 @@
 import type { OrderPayload } from "../orders/orderApi";
+import { apiFetch } from "../../utils/apiFetch";
 
 export type Config = { enabled: boolean; ready: boolean; public_key: string; environment: "test" };
 export type Payment = { public_code: string; payment_status: string; production_status: string; total: string; amount_minor: number; reservation_expires_at: string; charging_available: boolean };
@@ -23,7 +24,7 @@ export function savePendingPayment(value: PendingPayment) {
 
 export async function paymentRequest<T>(path: string, body?: unknown, key?: string, signal?: AbortSignal): Promise<T> {
   const timeout = AbortSignal.timeout(45000);
-  const response = await fetch(`/api/v1/payments/${path}`, {
+  const response = await apiFetch(`/api/v1/payments/${path}`, {
     method: body === undefined ? "GET" : "POST", cache: "no-store",
     headers: { "Content-Type": "application/json", ...(key ? { "Idempotency-Key": key } : {}) },
     body: body === undefined ? undefined : JSON.stringify(body),
