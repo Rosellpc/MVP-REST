@@ -5,8 +5,8 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
-      "source": "^/api/(.*)$",
-      "destination": "https://mvp-rest.onrender.com/api/$1"
+      "source": "/api/:path*",
+      "destination": "https://mvp-rest.onrender.com/api/:path*"
     },
     {
       "source": "/((?!api/).*)",
