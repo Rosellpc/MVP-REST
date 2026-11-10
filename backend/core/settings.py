@@ -75,6 +75,19 @@ OAUTH2_PROVIDER = {
     "CIMD_REGISTRATION_PERMISSION_CLASSES": ("oauth2_provider.cimd.HostAllowlistCIMDPermission",),
     "ALLOWED_REDIRECT_URI_SCHEMES": ["https"],
 }
+
+# Show why public OAuth client metadata cannot be resolved in Render logs.
+# Do not enable general OAuth DEBUG logging: it can include credentials.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {"oauth_console": {"class": "logging.StreamHandler"}},
+    "loggers": {
+        "oauth2_provider.cimd": {
+            "handlers": ["oauth_console"], "level": "INFO", "propagate": False,
+        },
+    },
+}
 PAYMENTS_ENABLED = env.bool("PAYMENTS_ENABLED", default=False)
 PAYMENTS_ENVIRONMENT = env("PAYMENTS_ENVIRONMENT", default="test")
 PAYMENT_RESERVATION_MINUTES = env.int("PAYMENT_RESERVATION_MINUTES", default=10)

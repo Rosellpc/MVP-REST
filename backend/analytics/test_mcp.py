@@ -130,3 +130,18 @@ class McpAccessTests(TestCase):
                 response = self.client.get("/o/authorize/", {**params, "client_id": "https://other.example/client.json"})
                 self.assertEqual(response.status_code, 400)
                 fetch.assert_not_called()
+
+    def test_https_login_keeps_csrf_protection_and_same_origin_referrer(self):
+        client = APIClient(enforce_csrf_checks=True)
+        page = client.get("/oauth/login/", secure=True)
+        self.assertContains(page, '<meta name="referrer" content="same-origin">')
+        csrf = client.cookies["csrftoken"].value
+        data = {"username": "manager", "password": "local-test-password",
+                "csrfmiddlewaretoken": csrf, "next": "/o/authorize/"}
+        self.assertEqual(client.post("/oauth/login/", data, secure=True).status_code, 403)
+        self.assertEqual(client.post("/oauth/login/", data, secure=True,
+                                    HTTP_REFERER="https://other.example/login/").status_code, 403)
+        response = client.post("/oauth/login/", data, secure=True,
+                               HTTP_REFERER="https://testserver/oauth/login/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/o/authorize/")
