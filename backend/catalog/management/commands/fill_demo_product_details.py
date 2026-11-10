@@ -18,12 +18,28 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--apply", action="store_true", help="Guarda; sin esta opción solo muestra el plan.")
         parser.add_argument("--restore", type=Path, help="Restaura un respaldo, si esos campos siguen sin editarse.")
+        parser.add_argument("--refresh-from", type=Path,
+                            help="Regenera ejemplos de un respaldo conservando las ediciones posteriores.")
 
     def handle(self, *args, **options):
+        if options["restore"] and options["refresh_from"]:
+            raise CommandError("Elige --restore o --refresh-from, no ambas opciones.")
         if options["restore"]:
             if not options["apply"]:
                 raise CommandError("La restauración requiere --apply.")
             return self.restore(options["restore"])
+        previous = {}
+        if options["refresh_from"]:
+            try:
+                payload = json.loads(options["refresh_from"].read_text(encoding="utf-8"))
+                if payload["version"] != 1 or not isinstance(payload["changes"], list):
+                    raise ValueError("version")
+                for change in payload["changes"]:
+                    if not isinstance(change["after"], dict):
+                        raise ValueError("after")
+                    previous[(change["id"], change["sku"])] = change["after"]
+            except (OSError, ValueError, KeyError, TypeError) as exc:
+                raise CommandError("Respaldo de referencia inválido.") from exc
         catalog = {row[0]: row for row in ROWS}
         if len(catalog) != len(ROWS):
             raise CommandError("Hay SKU duplicados en los ejemplos.")
@@ -40,7 +56,12 @@ class Command(BaseCommand):
                     unmatched.append(product.sku)
                     continue
                 values = demo_fields(row)
-                after = {key: value for key, value in values.items() if not getattr(product, key).strip()}
+                old_example = previous.get((product.pk, product.sku), {})
+                after = {
+                    key: value for key, value in values.items()
+                    if (not getattr(product, key).strip() or old_example.get(key) == getattr(product, key))
+                    and getattr(product, key) != value
+                }
                 if after:
                     changes.append({
                         "id": product.pk, "sku": product.sku, "name": product.name,

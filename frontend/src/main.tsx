@@ -11,6 +11,7 @@ import "./styles/checkout.css";
 import "./styles/catalog.css";
 import "./styles/staff-theme.css";
 import "./styles/customer-theme.css";
+import "./styles/purchase-flow.css";
 
 const rootElement = document.getElementById("root");
 

@@ -2,6 +2,7 @@ import json
 from io import StringIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from django.core.management import call_command
 from django.core.management.base import CommandError
@@ -70,3 +71,19 @@ class DemoDetailsTests(TestCase):
                 call_command("fill_demo_product_details", apply=True, restore=path, stdout=StringIO())
             self.product.refresh_from_db()
             self.assertEqual(self.product.description, "Edición posterior")
+
+    def test_refresh_updates_examples_but_preserves_manual_edits(self):
+        with TemporaryDirectory() as folder, override_settings(BASE_DIR=Path(folder) / "backend"):
+            call_command("fill_demo_product_details", apply=True, stdout=StringIO())
+            backup = next((Path(folder) / ".artifacts" / "catalog-backups").glob("*.json"))
+            self.product.ingredients = "Ingredientes editados por el usuario"
+            self.product.save()
+            with patch("catalog.demo_details.NOTICE", "DEMOSTRACIÓN: aviso actualizado"):
+                call_command("fill_demo_product_details", refresh_from=backup, stdout=StringIO())
+                self.product.refresh_from_db()
+                self.assertNotIn("aviso actualizado", self.product.description)
+                call_command("fill_demo_product_details", refresh_from=backup, apply=True, stdout=StringIO())
+            self.product.refresh_from_db()
+            self.assertIn("aviso actualizado", self.product.description)
+            self.assertIn("aviso actualizado", self.product.nutritional_information)
+            self.assertEqual(self.product.ingredients, "Ingredientes editados por el usuario")

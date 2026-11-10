@@ -4,6 +4,7 @@ import { useCallback } from "react";
 import { usePolling } from "../features/production/usePolling";
 import { Link, useParams } from "react-router";
 import { getOrder } from "../features/orders/orderApi";
+import CheckoutSteps from "../features/payments/CheckoutSteps";
 
 export default function OrderConfirmationPage() {
   const { publicCode = "" } = useParams();
@@ -19,6 +20,7 @@ function OrderTracking({ publicCode }: { publicCode: string }) {
 
   return (
       <main className="main-content cart-page">
+        <CheckoutSteps step={2} />
         <p className="eyebrow">Tu pedido</p>
         {loading ? <p role="status">Consultando confirmación…</p> : error && !order ? (
           <section className="cart-panel">
@@ -29,7 +31,8 @@ function OrderTracking({ publicCode }: { publicCode: string }) {
           </section>
         ) : order && (
           <section className="cart-panel confirmation-panel">
-            <h1>{order.payment_environment === "test" ? "Pago de prueba confirmado en Culqi" : "Pedido de demostración registrado"}</h1>
+            <p className="payment-confirmed-badge">✓ {order.payment_environment === "test" ? "Pago de prueba confirmado" : "Pago simulado confirmado"}</p>
+            <h1>Estado del pedido</h1>
             <p className="demo-notice">{order.payment_environment === "test" ? "Culqi confirmó el cargo en integración. No se cobró dinero real. Tu pedido se envió a preparación de prueba." : "Pago y preparación de demostración. No se realizan cobros ni preparaciones reales."}</p>
             <OrderProgress status={order.production_status} />
             {error && <p role="alert">{error} Se muestra la última información recibida.</p>}

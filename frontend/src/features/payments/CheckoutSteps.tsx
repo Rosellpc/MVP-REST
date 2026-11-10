@@ -1,9 +1,8 @@
-export default function CheckoutSteps({ payment = false }: { payment?: boolean }) {
+export default function CheckoutSteps({ step = 1 }: { step?: 0 | 1 | 2 }) {
   return <nav aria-label="Progreso del pedido" className="checkout-progress">
-    <ol>
-      <li><span aria-hidden="true">✓</span>Carrito</li>
-      <li aria-current={!payment ? "step" : undefined}><span aria-hidden="true">2</span>Datos y resumen</li>
-      <li aria-current={payment ? "step" : undefined}><span aria-hidden="true">3</span>Confirmación</li>
-    </ol>
+    <ol>{["Carrito y entrega", "Pago", "Estado del pedido"].map((label, index) =>
+      <li key={label} aria-current={step === index ? "step" : undefined}>
+        <span aria-hidden="true">{index < step ? "✓" : index + 1}</span>{label}
+      </li>)}</ol>
   </nav>;
 }

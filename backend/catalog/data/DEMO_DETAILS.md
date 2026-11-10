@@ -23,6 +23,18 @@ un JSON en `.artifacts/catalog-backups/` con los valores anteriores y los aplica
 La escritura y su comprobación se realizan dentro de una transacción. Repetir el
 comando conserva los campos ya completados.
 
+Si cambias `NOTICE`, `ALLERGEN_NOTICE` o el contenido de los ejemplos, regenera los
+campos de un respaldo con:
+
+```bash
+python manage.py fill_demo_product_details --refresh-from ../.artifacts/catalog-backups/ARCHIVO.json
+python manage.py fill_demo_product_details --refresh-from ../.artifacts/catalog-backups/ARCHIVO.json --apply
+```
+
+Solo se reemplazan los campos que siguen coincidiendo exactamente con los ejemplos
+guardados en ese respaldo; las ediciones posteriores se conservan. La actualización
+crea otro respaldo. Para una actualización futura usa ese nuevo archivo como referencia.
+
 Para restaurar un respaldo específico:
 
 ```bash

@@ -116,7 +116,7 @@ export default function CulqiCheckoutPage({ config }: { config: Config }) {
   if (items.length === 0 && !pending) return <Navigate to="/cart" replace />;
   const terminal = payment && ["FAILED", "EXPIRED"].includes(payment.payment_status);
   return <main className="main-content cart-page checkout-page">
-    <CheckoutSteps payment={Boolean(pending)} />
+    <CheckoutSteps step={1} />
     <p className="eyebrow">Checkout · Culqi</p><h1>Completa tu pedido</h1>
     <p className="demo-notice">Entorno de integración: utiliza medios de pago de prueba. No se cobrará dinero real. El pago aprobado enviará tickets de prueba a Cocina y Barra.</p>
     {error && <p className="checkout-error" role="alert">{error}</p>}
