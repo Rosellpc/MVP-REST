@@ -4,8 +4,10 @@ from hashlib import sha256
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth.views import LoginView
+from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from django.shortcuts import render
 from django.utils.decorators import method_decorator
 from django.views.decorators.cache import never_cache
 from oauth2_provider.models import get_access_token_model
@@ -26,12 +28,19 @@ class StaffOAuthForm(AuthenticationForm):
 class StaffOAuthLoginView(LoginView):
     template_name = "accounts/oauth_login.html"
     authentication_form = StaffOAuthForm
+    next_page = "/oauth/connected/"
 
     def post(self, request, *args, **kwargs):
         throttle = LoginThrottle()
         if not throttle.allow_request(request, self):
             return JsonResponse({"detail": "Espera un minuto antes de volver a intentarlo."}, status=429)
         return super().post(request, *args, **kwargs)
+
+
+@login_required
+@never_cache
+def oauth_connected(request):
+    return render(request, "accounts/oauth_connected.html")
 
 
 def oauth_metadata(request):

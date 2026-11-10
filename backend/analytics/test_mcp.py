@@ -108,7 +108,8 @@ class McpAccessTests(TestCase):
             "client_id": client_id, "client_name": "ChatGPT",
             "redirect_uris": [self.application.redirect_uris],
             "grant_types": ["authorization_code", "refresh_token"],
-            "response_types": ["code"], "token_endpoint_auth_method": "none",
+            "response_types": ["code"], "token_endpoint_auth_method": "private_key_jwt",
+            "token_endpoint_auth_methods_supported": ["none", "private_key_jwt"],
         }
         self.client.force_login(self.user)
         params = {
@@ -118,6 +119,7 @@ class McpAccessTests(TestCase):
             "code_challenge": "a" * 43, "code_challenge_method": "S256",
         }
         config = {**settings.OAUTH2_PROVIDER, "CIMD_ENABLED": True,
+                  "CIMD_METADATA_FETCHER": "accounts.mcp_oauth_client.ChatGPTMetadataFetcher",
                   "CIMD_ALLOWED_HOSTS": ["chatgpt.com"],
                   "CIMD_REGISTRATION_PERMISSION_CLASSES": ("oauth2_provider.cimd.HostAllowlistCIMDPermission",)}
         with override_settings(OAUTH2_PROVIDER=config):
@@ -130,6 +132,18 @@ class McpAccessTests(TestCase):
                 response = self.client.get("/o/authorize/", {**params, "client_id": "https://other.example/client.json"})
                 self.assertEqual(response.status_code, 400)
                 fetch.assert_not_called()
+
+    def test_cimd_does_not_downgrade_private_only_client(self):
+        from accounts.mcp_oauth_client import ChatGPTMetadataFetcher
+        document = {"token_endpoint_auth_method": "private_key_jwt",
+                    "token_endpoint_auth_methods_supported": ["private_key_jwt"]}
+        with patch("oauth2_provider.cimd.SafeMetadataFetcher.fetch", return_value=(document, 300)):
+            metadata, _ = ChatGPTMetadataFetcher().fetch("https://chatgpt.com/oauth/test/client.json")
+            self.assertEqual(metadata["token_endpoint_auth_method"], "private_key_jwt")
+        document["token_endpoint_auth_methods_supported"] = ["none", "private_key_jwt"]
+        with patch("oauth2_provider.cimd.SafeMetadataFetcher.fetch", return_value=(document, 300)):
+            metadata, _ = ChatGPTMetadataFetcher().fetch("https://other.example/client.json")
+            self.assertEqual(metadata["token_endpoint_auth_method"], "private_key_jwt")
 
     def test_https_login_keeps_csrf_protection_and_same_origin_referrer(self):
         client = APIClient(enforce_csrf_checks=True)
@@ -145,3 +159,11 @@ class McpAccessTests(TestCase):
                                HTTP_REFERER="https://testserver/oauth/login/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response["Location"], "/o/authorize/")
+
+    def test_direct_login_has_valid_destination(self):
+        response = self.client.post("/oauth/login/", {
+            "username": "manager", "password": "local-test-password",
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response["Location"], "/oauth/connected/")
+        self.assertContains(self.client.get(response["Location"]), "Sesión iniciada")

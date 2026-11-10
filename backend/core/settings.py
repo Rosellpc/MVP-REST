@@ -71,6 +71,7 @@ OAUTH2_PROVIDER = {
     "PKCE_REQUIRED": True,
     "COMPLIANT_BCP_RFC9700_PKCE_METHOD": True,
     "CIMD_ENABLED": True,
+    "CIMD_METADATA_FETCHER": "accounts.mcp_oauth_client.ChatGPTMetadataFetcher",
     "CIMD_ALLOWED_HOSTS": ["chatgpt.com"],
     "CIMD_REGISTRATION_PERMISSION_CLASSES": ("oauth2_provider.cimd.HostAllowlistCIMDPermission",),
     "ALLOWED_REDIRECT_URI_SCHEMES": ["https"],

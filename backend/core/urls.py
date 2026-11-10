@@ -17,11 +17,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import include, path
 from .health import health
-from accounts.mcp_auth import StaffOAuthLoginView, oauth_metadata
+from accounts.mcp_auth import StaffOAuthLoginView, oauth_connected, oauth_metadata
 
 urlpatterns = [
     path('.well-known/oauth-authorization-server', oauth_metadata),
     path('oauth/login/', StaffOAuthLoginView.as_view(), name='mcp-oauth-login'),
+    path('oauth/connected/', oauth_connected, name='mcp-oauth-connected'),
     path('o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     path('api/health/', health),
     path('api/v1/', include('payments.urls')),
