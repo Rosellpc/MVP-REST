@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="referrer" content="no-referrer">
+  <title>RestaurantOS · Conectar cuenta</title>
+  <style>
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:#151515;color:#f5f5f5;font:16px system-ui,sans-serif}
+    main{width:min(340px,80vw);padding:32px;border:1px solid #444;border-radius:20px;background:#222}
+    h1{font-size:24px}p{color:#bbb;line-height:1.5}label{display:block;margin:18px 0 6px}
+    input{box-sizing:border-box;width:100%;padding:12px;border:1px solid #666;border-radius:8px;background:#181818;color:white}
+    button{width:100%;margin-top:24px;padding:12px;border:0;border-radius:8px;font:inherit;cursor:pointer}
+    .errorlist{padding-left:20px;color:#ffb7b7}
+  </style>
+</head>
+<body><main>
+  <p>REST-OS</p><h1>Conecta tu cuenta</h1>
+  <p>Ingresa con tu cuenta de personal para autorizar las consultas del dashboard.</p>
+  <form method="post">{% csrf_token %}
+    {{ form.non_field_errors }}
+    <label for="id_username">Usuario</label>{{ form.username }}{{ form.username.errors }}
+    <label for="id_password">Contraseña</label>{{ form.password }}{{ form.password.errors }}
+    <input type="hidden" name="next" value="{{ next }}">
+    <button type="submit">Continuar</button>
+  </form>
+</main></body></html>

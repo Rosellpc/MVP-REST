@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "oauth2_provider",
     "accounts.apps.AccountsConfig",
     "catalog.apps.CatalogConfig",
     "orders.apps.OrdersConfig",
@@ -54,6 +55,26 @@ INSTALLED_APPS = [
 ]
 
 AUTH_USER_MODEL = "accounts.User"
+LOGIN_URL = "/oauth/login/"
+MCP_RESOURCE_URL = env("MCP_RESOURCE_URL", default="https://restos-mcp.onrender.com/mcp").rstrip("/")
+MCP_AUTH_ISSUER = env("MCP_AUTH_ISSUER", default="https://mvp-rest.onrender.com").rstrip("/")
+OAUTH2_PROVIDER = {
+    "SCOPES": {
+        "dashboard:read": "Consultar los indicadores privados del dashboard",
+        "sales:read": "Consultar resúmenes agregados de ventas",
+    },
+    "DEFAULT_SCOPES": ["dashboard:read", "sales:read"],
+    "ACCESS_TOKEN_EXPIRE_SECONDS": 3600,
+    "REFRESH_TOKEN_EXPIRE_SECONDS": 604800,
+    "ROTATE_REFRESH_TOKEN": True,
+    "REFRESH_TOKEN_REUSE_PROTECTION": True,
+    "PKCE_REQUIRED": True,
+    "COMPLIANT_BCP_RFC9700_PKCE_METHOD": True,
+    "CIMD_ENABLED": True,
+    "CIMD_ALLOWED_HOSTS": ["chatgpt.com"],
+    "CIMD_REGISTRATION_PERMISSION_CLASSES": ("oauth2_provider.cimd.HostAllowlistCIMDPermission",),
+    "ALLOWED_REDIRECT_URI_SCHEMES": ["https"],
+}
 PAYMENTS_ENABLED = env.bool("PAYMENTS_ENABLED", default=False)
 PAYMENTS_ENVIRONMENT = env("PAYMENTS_ENVIRONMENT", default="test")
 PAYMENT_RESERVATION_MINUTES = env.int("PAYMENT_RESERVATION_MINUTES", default=10)

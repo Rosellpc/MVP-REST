@@ -8,6 +8,10 @@ from rest_framework import serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from oauth2_provider.contrib.rest_framework import TokenHasScope
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
+from accounts.mcp_auth import McpOAuthAuthentication
 from accounts.permissions import HasAreaPermission
 from orders.models import Order, OrderItem
 from production.models import ProductionTicket, CancellationRequest
@@ -108,3 +112,39 @@ class DashboardView(APIView):
                          "pending_cancellations": CancellationRequest.objects.filter(approved_at__isnull=True, rejected_at__isnull=True).count(),
                          "stock": {**stock_totals, "units": stock_totals["units"] or 0, "enabled": stock_enabled, "shift_id": shift.pk if shift else None,
                                    "products": products.count(), "alerts": alerts}, "costing": costing})
+
+
+@method_decorator(never_cache, name="dispatch")
+class McpDashboardView(DashboardView):
+    """Same indicators and permissions as the dashboard, authenticated by OAuth."""
+    authentication_classes = [McpOAuthAuthentication]
+    permission_classes = [TokenHasScope, HasAreaPermission]
+    required_scopes = ["dashboard:read"]
+
+
+@method_decorator(never_cache, name="dispatch")
+class McpSalesSummaryView(APIView):
+    authentication_classes = [McpOAuthAuthentication]
+    permission_classes = [TokenHasScope, HasAreaPermission]
+    required_permission = "accounts.access_staff"
+    required_scopes = ["sales:read"]
+
+    def get(self, request):
+        period = Period(data=request.query_params)
+        if not period.is_valid():
+            return Response({"detail": "Usa fechas YYYY-MM-DD y un intervalo de hasta 366 días, sin fechas futuras."}, status=400)
+        start, end = period.validated_data["start"], period.validated_data["end"]
+        begin = datetime.combine(start, time.min, ZONE)
+        stop = datetime.combine(end + timedelta(days=1), time.min, ZONE)
+        orders = Order.objects.filter(status="DEMO_CONFIRMED", payment_status="SIMULATED",
+                                      created_at__gte=begin, created_at__lt=stop)
+        valid, metrics = order_metrics(orders)
+        metrics.update({
+            "all_orders": orders.count(),
+            "cancelled": orders.filter(production_status="CANCELLED").count(),
+            "partial_excluded": orders.filter(production_status="PARTIALLY_CANCELLED").count(),
+            "units": OrderItem.objects.filter(order__in=valid).aggregate(total=Sum("quantity"))["total"] or 0,
+        })
+        return Response({"generated_at": timezone.now(),
+                         "period": {"start": start, "end": end, "timezone": "America/Lima"},
+                         "demo": True, "currency": "PEN", "metrics": metrics})

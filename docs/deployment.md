@@ -1,5 +1,7 @@
 # Demo: Vercel + Render + Supabase
 
+Para conectar el MCP privado con el dashboard y los reportes de ventas, consulta [la guía de OAuth y publicación](mcp-dashboard.md).
+
 Arquitectura: Vercel → proxy `/api/*` → Django en Render → PostgreSQL en Supabase.
 El navegador usa el mismo origen para la API y la interfaz. No necesita secretos
 VITE, CORS abierto ni cookies entre sitios. Esta guía prepara una demo sin cobros.

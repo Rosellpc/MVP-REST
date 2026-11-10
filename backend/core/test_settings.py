@@ -16,6 +16,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "oauth2_provider",
     "accounts.apps.AccountsConfig",
     "catalog.apps.CatalogConfig",
     "orders.apps.OrdersConfig",
@@ -49,3 +50,10 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 STATIC_URL = "static/"
 ORDER_DEMO_ENABLED = True
 PRODUCTION_DEMO_ENABLED = True
+MCP_RESOURCE_URL = "https://restos-mcp.onrender.com/mcp"
+MCP_AUTH_ISSUER = "https://mvp-rest.onrender.com"
+LOGIN_URL = "/oauth/login/"
+OAUTH2_PROVIDER = {
+    "SCOPES": {"dashboard:read": "Dashboard", "sales:read": "Sales"},
+    "PKCE_REQUIRED": True,
+}

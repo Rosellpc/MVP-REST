@@ -10,6 +10,50 @@ const API_BASE_URL = (
 const PORT = Number(process.env.PORT || 8787);
 const MCP_PATH = "/mcp";
 const MCP_METHODS = new Set(["POST", "GET", "DELETE"]);
+const MCP_RESOURCE_URL = (process.env.MCP_RESOURCE_URL || "https://restos-mcp.onrender.com/mcp").replace(/\/+$/, "");
+const AUTH_ISSUER = (process.env.MCP_AUTH_ISSUER || API_BASE_URL).replace(/\/+$/, "");
+const RESOURCE_METADATA_URL = `${new URL(MCP_RESOURCE_URL).origin}/.well-known/oauth-protected-resource`;
+
+function authRequired(scope) {
+  return {
+    isError: true,
+    content: [{ type: "text", text: "Conecta tu cuenta de personal de RestaurantOS para consultar estos datos privados." }],
+    _meta: {
+      "mcp/www_authenticate": [`Bearer resource_metadata="${RESOURCE_METADATA_URL}", scope="${scope}", error="invalid_token", error_description="Connect your RestaurantOS staff account"`],
+    },
+  };
+}
+
+async function getPrivateReport(path, args, authorization, scope) {
+  if (!authorization || !/^Bearer [^\s]+$/i.test(authorization) || authorization.length > 4103) {
+    return authRequired(scope);
+  }
+  const url = new URL(path, API_BASE_URL);
+  for (const [key, value] of Object.entries(args)) {
+    if (value !== undefined) url.searchParams.set(key, value);
+  }
+  try {
+    // Only the two fixed report routes below receive a user's token.
+    const response = await fetch(url, {
+      headers: { Accept: "application/json", Authorization: authorization },
+      redirect: "error",
+      signal: AbortSignal.timeout(20000),
+      cache: "no-store",
+    });
+    if (response.status === 401) return authRequired(scope);
+    if (!response.ok) {
+      const text = response.status === 403
+        ? "Tu cuenta o conexión no tiene permiso para este reporte. Revisa el acceso de personal y vuelve a conectar la cuenta."
+        : response.status === 400
+          ? "Revisa las fechas: usa YYYY-MM-DD, hasta 366 días y sin fechas futuras."
+          : "El reporte no está disponible temporalmente. Intenta de nuevo.";
+      return { isError: true, content: [{ type: "text", text }] };
+    }
+    return result(await response.json());
+  } catch {
+    return { isError: true, content: [{ type: "text", text: "No se pudo consultar el reporte. Intenta de nuevo." }] };
+  }
+}
 
 class PublicApiError extends Error {
   constructor(status) {
@@ -128,10 +172,10 @@ function summarizeProduct(item) {
   };
 }
 
-function createRestaurantServer() {
+function createRestaurantServer(authorization) {
   const server = new McpServer({
     name: "restaurantos-menu",
-    version: "1.0.0",
+    version: "1.1.0",
   });
 
   const readOnlyAnnotations = {
@@ -152,6 +196,7 @@ function createRestaurantServer() {
       },
       outputSchema: listOutputSchema,
       annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "noauth" }] },
     },
     async ({ q, categoriaId }) => {
       try {
@@ -210,6 +255,7 @@ function createRestaurantServer() {
       },
       outputSchema: detailOutputSchema,
       annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "noauth" }] },
     },
     async ({ id }) => {
       try {
@@ -249,6 +295,7 @@ function createRestaurantServer() {
       },
       outputSchema: availabilityOutputSchema,
       annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "noauth" }] },
     },
     async ({ id }) => {
       try {
@@ -286,17 +333,55 @@ function createRestaurantServer() {
     }
   );
 
+  const dateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Usa YYYY-MM-DD").optional();
+  const periodInput = { start: dateSchema, end: dateSchema };
+  for (const tool of [
+    {
+      name: "consultar_dashboard",
+      title: "Consultar dashboard privado",
+      description: "Lee los indicadores del dashboard de RestaurantOS: ventas simuladas, comparación del período anterior, tendencia diaria, productos más vendidos, canales, cocina, barra, stock, alertas y costeo. Requiere una cuenta de personal autorizada. start y end son fechas inclusivas YYYY-MM-DD; por defecto consulta los últimos 7 días en America/Lima. Máximo 366 días. Los indicadores operativos actuales no representan un historial del período. No modifica datos.",
+      path: "/api/v1/mcp/dashboard/",
+      scope: "dashboard:read",
+    },
+    {
+      name: "resumen_ventas",
+      title: "Resumen privado de ventas",
+      description: "Consulta totales agregados de pedidos de demostración con pago simulado: importe, pedidos válidos, cancelaciones, unidades y ticket promedio. No representa cobros reales. Requiere cuenta de personal. start y end son fechas inclusivas YYYY-MM-DD; por defecto últimos 7 días en America/Lima, máximo 366 días. No devuelve datos de clientes ni modifica datos.",
+      path: "/api/v1/mcp/sales/summary/",
+      scope: "sales:read",
+    },
+  ]) {
+    server.registerTool(tool.name, {
+      title: tool.title,
+      description: tool.description,
+      inputSchema: periodInput,
+      annotations: readOnlyAnnotations,
+      _meta: { securitySchemes: [{ type: "oauth2", scopes: [tool.scope] }] },
+    }, (args) => getPrivateReport(tool.path, args, authorization, tool.scope));
+  }
+
   return server;
 }
 
 const httpServer = createServer(async (req, res) => {
   const url = new URL(req.url || "/", "http://localhost");
 
+  if (req.method === "GET" && ["/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp"].includes(url.pathname)) {
+    res.writeHead(200, { "content-type": "application/json", "Access-Control-Allow-Origin": "*" });
+    res.end(JSON.stringify({
+      resource: MCP_RESOURCE_URL,
+      authorization_servers: [AUTH_ISSUER],
+      scopes_supported: ["dashboard:read", "sales:read"],
+      bearer_methods_supported: ["header"],
+    }));
+    return;
+  }
+
   if (req.method === "OPTIONS" && url.pathname === MCP_PATH) {
     res.writeHead(204, {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "POST, GET, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "content-type, mcp-session-id",
+      "Access-Control-Allow-Headers": "content-type, authorization, mcp-session-id, mcp-protocol-version",
       "Access-Control-Expose-Headers": "Mcp-Session-Id",
     });
     res.end();
@@ -314,7 +399,8 @@ const httpServer = createServer(async (req, res) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
     res.setHeader("Access-Control-Expose-Headers", "Mcp-Session-Id");
 
-    const mcpServer = createRestaurantServer();
+    res.setHeader("Cache-Control", "private, no-store");
+    const mcpServer = createRestaurantServer(req.headers.authorization);
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: undefined,
       enableJsonResponse: true,
