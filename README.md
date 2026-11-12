@@ -46,7 +46,7 @@ Dependencias fijadas en `backend/requirements.txt` y `frontend/pnpm-lock.yaml`.
 
 | Ruta | Funcionalidad | Acceso |
 |---|---|---|
-| `/`, `/menu` | Categorías, productos y disponibilidad | Público |
+| `/`, `/menu` | Categorías, productos, disponibilidad y asistente RAG de la carta | Público |
 | `/menu/:productId` | Detalles y añadir al carrito | Público |
 | `/cart`, `/checkout` | Resumen validado y pago simulado | Público |
 | `/orders/:publicCode` | Seguimiento y despedida al estar listo | Código aleatorio |
@@ -60,6 +60,48 @@ Dependencias fijadas en `backend/requirements.txt` y `frontend/pnpm-lock.yaml`.
 
 NotFoundPage queda fuera de los layouts compartidos. Stock y dashboard utilizan
 StaffLayout; Costeo mantiene su navegación propia con enlaces entre módulos.
+
+## Asistente RAG de la carta
+
+El menú incluye un chat que responde consultas sobre productos, ingredientes,
+alérgenos y las políticas de atención documentadas. El endpoint público de Django
+es `POST /api/v1/assistant/chat/`; en producción el frontend lo consume mediante
+el proxy de Vercel. Devuelve la respuesta y las etiquetas de las fuentes utilizadas.
+El acceso anónimo está limitado a 10 solicitudes por minuto.
+
+La información actual se obtiene de dos lugares:
+
+- Nombres, categorías, precios y existencias se leen de la base de datos en cada
+  consulta.
+- Ingredientes, alérgenos y políticas se buscan en los DOCX de `docs/rag/`. Sus
+  fichas alimentarias y condiciones comerciales son simuladas para las pruebas;
+  el chat todavía no es una fuente de información para clientes reales.
+
+### Configuración
+
+La clave de OpenAI y el ID del vector store se configuran solo en el backend:
+
+```dotenv
+OPENAI_API_KEY=tu_clave_de_api
+OPENAI_CHAT_MODEL=gpt-4.1-mini
+OPENAI_VECTOR_STORE_ID=vs_...
+```
+
+Para crear el índice desde la carpeta `backend/`, con el entorno `uv` activo:
+
+```bash
+uv run python manage.py create_knowledge_base
+```
+
+El comando sube los DOCX a OpenAI y crea un vector store nuevo. Copia el ID que
+imprime a `backend/.env` y reinicia Django. Si falta la clave o el ID, el chat
+responde que todavía no está configurado. Cada vez que cambien los DOCX, repite
+el comando y reemplaza el ID anterior; no crea el índice en cada arranque.
+
+En Render configura `OPENAI_API_KEY` y `OPENAI_VECTOR_STORE_ID` como variables
+privadas del servicio backend. `OPENAI_CHAT_MODEL` es opcional y por defecto usa
+`gpt-4.1-mini`. No pongas la clave de OpenAI en el frontend ni en variables `VITE_*`.
+La guía completa está en [docs/rag/README.md](docs/rag/README.md).
 
 ## Reglas operativas vigentes
 
@@ -170,7 +212,7 @@ No ejecutar pruebas destructivas contra los datos del restaurante.
 - [Dashboard y fórmulas](docs/dashboard.md).
 - [Revisión del proyecto — 12/10/2026](docs/project-review-2026-10-12.md).
 
-- [Chat RAG experimental](docs/rag/README.md): configuración del vector store, fuentes y límites.
+- [Chat RAG de la carta](docs/rag/README.md): fuentes, configuración local/Render, actualización del vector store y límites.
 
 ## Próximas etapas
 
