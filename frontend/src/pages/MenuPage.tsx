@@ -6,6 +6,7 @@ import CategorySidebar from "../components/products/CategorySidebar";
 import DishesSection from "../components/products/DishesSection";
 import { getProductCategories } from "../utils/filterProducts.ts";
 import { useMenuProducts } from "../features/catalog/hooks/useMenuProducts";
+import AssistantChat from "../features/assistant/AssistantChat";
 
 export default function MenuPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -68,6 +69,7 @@ export default function MenuPage() {
             />
           </div>
         )}
+        <AssistantChat />
       </main>
   );
 }

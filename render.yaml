@@ -36,3 +36,7 @@ services:
         value: "True"
       - key: PAYMENTS_ENABLED
         value: "False"
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_VECTOR_STORE_ID
+        sync: false

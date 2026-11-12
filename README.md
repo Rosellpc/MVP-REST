@@ -170,6 +170,8 @@ No ejecutar pruebas destructivas contra los datos del restaurante.
 - [Dashboard y fórmulas](docs/dashboard.md).
 - [Revisión del proyecto — 12/10/2026](docs/project-review-2026-10-12.md).
 
+- [Chat RAG experimental](docs/rag/README.md): configuración del vector store, fuentes y límites.
+
 ## Próximas etapas
 
 1. Validar fichas alimentarias, ingredientes cuantificados, precios y enlaces

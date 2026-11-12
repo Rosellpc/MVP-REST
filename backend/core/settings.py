@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "costing",
     "stock",
     "payments",
+    "assistant.apps.AssistantConfig",
 ]
 
 AUTH_USER_MODEL = "accounts.User"
@@ -90,6 +91,9 @@ LOGGING = {
     },
 }
 PAYMENTS_ENABLED = env.bool("PAYMENTS_ENABLED", default=False)
+OPENAI_API_KEY = env("OPENAI_API_KEY", default="")
+OPENAI_VECTOR_STORE_ID = env("OPENAI_VECTOR_STORE_ID", default="")
+OPENAI_CHAT_MODEL = env("OPENAI_CHAT_MODEL", default="gpt-4.1-mini")
 PAYMENTS_ENVIRONMENT = env("PAYMENTS_ENVIRONMENT", default="test")
 PAYMENT_RESERVATION_MINUTES = env.int("PAYMENT_RESERVATION_MINUTES", default=10)
 CULQI_PUBLIC_KEY = env("CULQI_PUBLIC_KEY", default="")
